@@ -76,85 +76,104 @@ class MainWindow(QMainWindow):
         central_widget = QWidget()
         self.setCentralWidget(central_widget)
 
-        root_layout = QVBoxLayout(central_widget)
-        root_layout.setContentsMargins(0, 0, 0, 0)
-        root_layout.setSpacing(0)
+        main_layout = QHBoxLayout(central_widget)
+        main_layout.setContentsMargins(0, 0, 0, 0)
+        main_layout.setSpacing(0)
 
-        # Top Navigation Toolbar
-        toolbar = QWidget()
-        toolbar.setObjectName("sidebarHeader")
-        tb_layout = QHBoxLayout(toolbar)
-        tb_layout.setContentsMargins(14, 8, 14, 8)
-        tb_layout.setSpacing(10)
+        # 1. Left Navigation Rail (62px WhatsApp/Telegram Style)
+        nav_rail = QWidget()
+        nav_rail.setObjectName("navRail")
+        nr_layout = QVBoxLayout(nav_rail)
+        nr_layout.setContentsMargins(0, 8, 0, 8)
+        nr_layout.setSpacing(4)
 
-        # App Brand
-        lbl_brand = QLabel("💬 LAN Messenger")
-        lbl_brand.setStyleSheet("font-size: 16px; font-weight: bold; color: #00a884;")
-        tb_layout.addWidget(lbl_brand)
+        # Brand button
+        btn_brand = QPushButton("💬")
+        btn_brand.setProperty("class", "navBtnBrand")
+        btn_brand.setToolTip(f"LAN Messenger v2.5 — {config.username}")
+        nr_layout.addWidget(btn_brand)
 
-        self.lbl_user_tag = QLabel(f"({config.username})")
-        self.lbl_user_tag.setStyleSheet("color: #8696a0; font-size: 13px;")
-        tb_layout.addWidget(self.lbl_user_tag)
+        # Chats Nav button (Active)
+        self.btn_nav_chats = QPushButton("💬")
+        self.btn_nav_chats.setProperty("class", "navBtn navBtnActive")
+        self.btn_nav_chats.setToolTip("Chats")
+        nr_layout.addWidget(self.btn_nav_chats)
 
-        tb_layout.addStretch()
+        # Broadcast Nav button
+        self.btn_nav_broadcast = QPushButton("📢")
+        self.btn_nav_broadcast.setProperty("class", "navBtn")
+        self.btn_nav_broadcast.setToolTip("Group Broadcast (All Devices)")
+        self.btn_nav_broadcast.clicked.connect(self._select_broadcast)
+        nr_layout.addWidget(self.btn_nav_broadcast)
 
-        # Action Buttons
-        btn_add = QPushButton("➕ Connect IP")
-        btn_add.setToolTip("Connect to a PC directly by IP address")
-        btn_add.clicked.connect(self._open_add_peer)
-        tb_layout.addWidget(btn_add)
+        # Scan LAN Nav button
+        self.btn_nav_scan = QPushButton("⚡")
+        self.btn_nav_scan.setProperty("class", "navBtn")
+        self.btn_nav_scan.setToolTip("Scan Network for Devices (Huawei & Tenda)")
+        self.btn_nav_scan.clicked.connect(self._scan_subnets)
+        nr_layout.addWidget(self.btn_nav_scan)
 
-        self.btn_scan = QPushButton("⚡ Scan LAN")
-        self.btn_scan.setToolTip("Scan both Huawei & Tenda subnets for active PCs")
-        self.btn_scan.clicked.connect(self._scan_subnets)
-        tb_layout.addWidget(self.btn_scan)
+        # Connect IP Nav button
+        self.btn_nav_add = QPushButton("➕")
+        self.btn_nav_add.setProperty("class", "navBtn")
+        self.btn_nav_add.setToolTip("Connect PC by IP or Domain")
+        self.btn_nav_add.clicked.connect(self._open_add_peer)
+        nr_layout.addWidget(self.btn_nav_add)
 
-        btn_mobile = QPushButton("📱 Connect Mobile")
-        btn_mobile.setToolTip("Show QR Code to connect Android or iPhone instantly")
-        btn_mobile.clicked.connect(self._open_mobile_qr)
-        tb_layout.addWidget(btn_mobile)
+        # Mobile QR Nav button
+        self.btn_nav_mobile = QPushButton("📱")
+        self.btn_nav_mobile.setProperty("class", "navBtn")
+        self.btn_nav_mobile.setToolTip("Connect Mobile Phone via QR Code")
+        self.btn_nav_mobile.clicked.connect(self._open_mobile_qr)
+        nr_layout.addWidget(self.btn_nav_mobile)
 
-        btn_playit = QPushButton("🌐 Internet Link")
-        btn_playit.setToolTip("Get your Playit.gg link to connect friends worldwide")
-        btn_playit.clicked.connect(self._open_playit_dialog)
-        tb_layout.addWidget(btn_playit)
+        # Internet Link (Playit) Nav button
+        self.btn_nav_playit = QPushButton("🌐")
+        self.btn_nav_playit.setProperty("class", "navBtn")
+        self.btn_nav_playit.setToolTip("Playit.gg Internet Link (Connect Friends Worldwide)")
+        self.btn_nav_playit.clicked.connect(self._open_playit_dialog)
+        nr_layout.addWidget(self.btn_nav_playit)
 
-        btn_guide = QPushButton("📖 User Guide")
-        btn_guide.setToolTip("How to use LAN Messenger (Simple Instructions)")
-        btn_guide.clicked.connect(self._open_user_guide)
-        tb_layout.addWidget(btn_guide)
+        # Downloads Nav button
+        self.btn_nav_downloads = QPushButton("📁")
+        self.btn_nav_downloads.setProperty("class", "navBtn")
+        self.btn_nav_downloads.setToolTip("Open Downloads Folder")
+        self.btn_nav_downloads.clicked.connect(self._open_downloads_folder)
+        nr_layout.addWidget(self.btn_nav_downloads)
 
-        btn_folder = QPushButton("📁 Downloads")
-        btn_folder.setToolTip("Open folder containing received files")
-        btn_folder.clicked.connect(self._open_downloads_folder)
-        tb_layout.addWidget(btn_folder)
+        nr_layout.addStretch()
 
-        btn_net = QPushButton("🌐 Network Info")
-        btn_net.setToolTip("View IP and dual-router Huawei + Tenda instructions")
-        btn_net.clicked.connect(self._open_network_info)
-        tb_layout.addWidget(btn_net)
+        # Developer Button (Abid Developer)
+        self.btn_nav_dev = QPushButton("👨‍💻")
+        self.btn_nav_dev.setProperty("class", "navBtn")
+        self.btn_nav_dev.setToolTip("Abid Developer Profile & Remote Hub")
+        self.btn_nav_dev.clicked.connect(self._open_about_dialog)
+        nr_layout.addWidget(self.btn_nav_dev)
 
-        btn_settings = QPushButton("⚙️ Settings")
-        btn_settings.setToolTip("Change your display name or settings")
-        btn_settings.clicked.connect(self._open_settings)
-        tb_layout.addWidget(btn_settings)
+        # User Guide
+        self.btn_nav_guide = QPushButton("📖")
+        self.btn_nav_guide.setProperty("class", "navBtn")
+        self.btn_nav_guide.setToolTip("User Guide & Documentation")
+        self.btn_nav_guide.clicked.connect(self._open_user_guide)
+        nr_layout.addWidget(self.btn_nav_guide)
 
-        btn_about = QPushButton("👨‍💻 Developer")
-        btn_about.setToolTip("About Developer & Links (Abid Developer)")
-        btn_about.setStyleSheet(
-            "background-color: #1f2c34; color: #53bdeb; border: 1px solid #53bdeb; font-weight: bold;"
-        )
-        btn_about.clicked.connect(self._open_about_dialog)
-        tb_layout.addWidget(btn_about)
+        # Settings
+        self.btn_nav_settings = QPushButton("⚙️")
+        self.btn_nav_settings.setProperty("class", "navBtn")
+        self.btn_nav_settings.setToolTip("Settings & Profile")
+        self.btn_nav_settings.clicked.connect(self._open_settings)
+        nr_layout.addWidget(self.btn_nav_settings)
 
-        root_layout.addWidget(toolbar)
+        main_layout.addWidget(nav_rail)
 
-        # Central Splitter (Sidebar + Chat)
+        # 2. Central Splitter (Sidebar + Chat Panel)
         self.splitter = QSplitter(Qt.Orientation.Horizontal)
         self.splitter.setHandleWidth(1)
 
         self.sidebar = PeerListSidebar()
         self.sidebar.sig_peer_selected.connect(self._on_peer_selected)
+        self.sidebar.sig_quick_scan.connect(self._scan_subnets)
+        self.sidebar.sig_quick_add.connect(self._open_add_peer)
         self.splitter.addWidget(self.sidebar)
 
         self.chat_panel = ChatPanel()
@@ -164,10 +183,10 @@ class MainWindow(QMainWindow):
         self.chat_panel.sig_start_screenshare.connect(self._start_screenshare)
         self.splitter.addWidget(self.chat_panel)
 
-        self.splitter.setSizes([320, 700])
-        root_layout.addWidget(self.splitter, 1)
+        self.splitter.setSizes([310, 710])
+        main_layout.addWidget(self.splitter, 1)
 
-        # Status Bar
+        # 3. Modern Status Bar
         self.status_bar = QStatusBar()
         self.setStatusBar(self.status_bar)
 
@@ -529,21 +548,23 @@ class MainWindow(QMainWindow):
             self.screen_manager.stop_sharing()
             self.active_screen_ip = None
 
+    def _select_broadcast(self):
+        self.sidebar.select_peer("BROADCAST")
+        self._on_peer_selected("BROADCAST")
+
     def _open_add_peer(self):
         dlg = AddPeerDialog(self, network_engine=self.engine)
         dlg.sig_peer_selected.connect(self._on_peer_selected)
         dlg.exec()
 
     def _scan_subnets(self):
-        self.btn_scan.setEnabled(False)
-        self.btn_scan.setText("Scanning...")
+        self.btn_nav_scan.setEnabled(False)
         self.lbl_status_ip.setText("⚡ Scanning both subnets (192.168.100.x & 192.168.7.x)...")
         self.engine.scan_subnets()
 
     @pyqtSlot(int)
     def _on_sweep_completed(self, count: int):
-        self.btn_scan.setEnabled(True)
-        self.btn_scan.setText("⚡ Scan LAN")
+        self.btn_nav_scan.setEnabled(True)
         self.lbl_status_ip.setText(
             f"🟢 Online • Scan complete: {count} active device(s) found"
         )
@@ -592,7 +613,6 @@ class MainWindow(QMainWindow):
         dlg = SetupDialog(self, is_settings_mode=True)
         if dlg.exec():
             self.setWindowTitle(f"LAN Messenger — {config.username}")
-            self.lbl_user_tag.setText(f"({config.username})")
             self.engine.update_username(config.username)
 
     def _restore_window(self):

@@ -183,8 +183,10 @@ class ProfilePage(QWizardPage):
         self.selected_avatar = "gamer"
         self.buttons = {}
         for idx, av in enumerate(AVATARS):
-            btn = QPushButton(f"{av['icon']} {av['name']}")
-            btn.setFixedSize(85, 45)
+            btn = QPushButton(av["icon"])
+            btn.setFixedSize(50, 50)
+            btn.setCursor(Qt.CursorShape.PointingHandCursor)
+            btn.setToolTip(av["name"])
             btn.clicked.connect(
                 lambda checked, aid=av["id"]: self._select_avatar(aid)
             )
@@ -200,9 +202,9 @@ class ProfilePage(QWizardPage):
         for a_id, btn in self.buttons.items():
             av = get_avatar(a_id)
             is_sel = a_id == aid
-            border = "2px solid #00a884" if is_sel else "1px solid #444"
+            border = "3px solid #00a884" if is_sel else "1px solid rgba(255,255,255,0.1)"
             btn.setStyleSheet(
-                f"background-color: {av['bg']}; color: #fff; border: {border}; border-radius: 6px; font-weight: bold; font-size: 10px;"
+                f"background-color: {av['bg']}; color: #fff; border: {border}; border-radius: 25px; font-size: 22px;"
             )
 
 

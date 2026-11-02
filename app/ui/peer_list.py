@@ -1,3 +1,4 @@
+import time
 from typing import Dict, Any, Optional
 from PyQt6.QtWidgets import (
     QWidget,
@@ -7,6 +8,7 @@ from PyQt6.QtWidgets import (
     QLineEdit,
     QListWidget,
     QListWidgetItem,
+    QPushButton,
     QFrame,
 )
 from PyQt6.QtCore import Qt, pyqtSignal
@@ -16,7 +18,7 @@ BROADCAST_ID = "BROADCAST"
 
 
 class PeerItemWidget(QWidget):
-    """Custom rendering for a peer entry with avatar, status, and unread badge."""
+    """Modern WhatsApp Desktop / Telegram styled peer list item."""
 
     def __init__(
         self,
@@ -35,69 +37,101 @@ class PeerItemWidget(QWidget):
         self.is_broadcast = is_broadcast
         self.unread_count = 0
         self.last_msg = ""
+        self.last_time = time.time()
         self.init_ui()
 
     def init_ui(self):
         layout = QHBoxLayout(self)
-        layout.setContentsMargins(4, 4, 4, 4)
+        layout.setContentsMargins(10, 8, 10, 8)
         layout.setSpacing(12)
 
-        # Avatar
-        self.avatar = QLabel()
-        self.avatar.setFixedSize(44, 44)
+        # Avatar Container with Online Indicator Ring
+        avatar_container = QWidget()
+        avatar_container.setFixedSize(50, 50)
+        ac_layout = QVBoxLayout(avatar_container)
+        ac_layout.setContentsMargins(0, 0, 0, 0)
+
+        self.avatar = QLabel(avatar_container)
+        self.avatar.setFixedSize(48, 48)
+        self.avatar.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self._render_avatar()
-        layout.addWidget(self.avatar)
 
-        # Info layout
-        info_layout = QVBoxLayout()
-        info_layout.setSpacing(2)
-        info_layout.setContentsMargins(0, 0, 0, 0)
+        # Online Status Ring Badge (Bottom Right of Avatar)
+        self.status_badge = QLabel(avatar_container)
+        self.status_badge.setFixedSize(14, 14)
+        self.status_badge.move(34, 34)
+        self._update_status_badge()
 
-        name_row = QHBoxLayout()
+        layout.addWidget(avatar_container)
+
+        # Info column (Name, Last Message, Timestamp)
+        info_col = QVBoxLayout()
+        info_col.setContentsMargins(0, 2, 0, 2)
+        info_col.setSpacing(4)
+
+        # Top Row: Name + Time
+        top_row = QHBoxLayout()
+        top_row.setContentsMargins(0, 0, 0, 0)
         self.lbl_name = QLabel(self.username)
         self.lbl_name.setStyleSheet(
             "font-weight: 600; font-size: 14px; color: #e9edef;"
         )
-        self.lbl_status_dot = QLabel(
-            "📢"
-            if self.is_broadcast
-            else ("🟢" if self.status == "online" else "⚪")
-        )
-        self.lbl_status_dot.setStyleSheet("font-size: 10px;")
-        name_row.addWidget(self.lbl_name)
-        name_row.addWidget(self.lbl_status_dot)
-        name_row.addStretch()
+        top_row.addWidget(self.lbl_name)
+        top_row.addStretch()
 
+        self.lbl_time = QLabel("")
+        self.lbl_time.setStyleSheet("font-size: 11px; color: #8696a0;")
+        top_row.addWidget(self.lbl_time)
+        info_col.addLayout(top_row)
+
+        # Bottom Row: Last Message Snippet + Unread Badge
+        bot_row = QHBoxLayout()
+        bot_row.setContentsMargins(0, 0, 0, 0)
         self.lbl_sub = QLabel(
-            "Broadcast to all connected devices" if self.is_broadcast else self.ip
+            "Tap to broadcast to all devices" if self.is_broadcast else self.ip
         )
         self.lbl_sub.setStyleSheet("font-size: 12px; color: #8696a0;")
+        bot_row.addWidget(self.lbl_sub, 1)
 
-        info_layout.addLayout(name_row)
-        info_layout.addWidget(self.lbl_sub)
-        layout.addLayout(info_layout, 1)
-
-        # Unread badge
         self.lbl_badge = QLabel("")
         self.lbl_badge.setStyleSheet(
-            "background-color: #00a884; color: #111b21; font-weight: bold; font-size: 11px; border-radius: 9px; padding: 2px 6px;"
+            "background-color: #00a884; color: #111b21; font-weight: bold; "
+            "font-size: 11px; border-radius: 9px; min-width: 18px; max-height: 18px; "
+            "qproperty-alignment: AlignCenter; padding: 1px 5px;"
         )
         self.lbl_badge.setVisible(False)
-        layout.addWidget(self.lbl_badge)
+        bot_row.addWidget(self.lbl_badge)
+        info_col.addLayout(bot_row)
+
+        layout.addLayout(info_col, 1)
 
     def _render_avatar(self):
         if self.is_broadcast:
             self.avatar.setStyleSheet(
-                "background-color: #00a884; color: #ffffff; border-radius: 22px; font-size: 20px; qproperty-alignment: AlignCenter;"
+                "background: qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 #00a884, stop:1 #005c4b); "
+                "color: #ffffff; border-radius: 24px; font-size: 22px;"
             )
             self.avatar.setText("📢")
             return
 
         av = get_avatar(self.avatar_id)
         self.avatar.setStyleSheet(
-            f"background-color: {av['bg']}; color: #ffffff; border-radius: 22px; font-size: 20px; qproperty-alignment: AlignCenter;"
+            f"background: qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 {av['bg']}, stop:1 #111b21); "
+            f"color: #ffffff; border-radius: 24px; font-size: 22px; border: 1px solid rgba(255, 255, 255, 0.08);"
         )
         self.avatar.setText(av["icon"])
+
+    def _update_status_badge(self):
+        if self.is_broadcast:
+            self.status_badge.setVisible(False)
+            return
+
+        is_online = (self.status == "online")
+        dot_color = "#00a884" if is_online else "#8696a0"
+        self.status_badge.setStyleSheet(
+            f"background-color: {dot_color}; border: 2px solid #111b21; border-radius: 7px;"
+        )
+        self.status_badge.setVisible(True)
 
     def update_info(
         self,
@@ -113,12 +147,13 @@ class PeerItemWidget(QWidget):
             self._render_avatar()
         if status and not self.is_broadcast:
             self.status = status
-            self.lbl_status_dot.setText("🟢" if status == "online" else "⚪")
+            self._update_status_badge()
 
     def set_last_message(self, text: str):
         self.last_msg = text
-        display_text = (text[:24] + "...") if len(text) > 24 else text
-        self.lbl_sub.setText(f"{display_text}")
+        display_text = (text[:28] + "...") if len(text) > 28 else text
+        self.lbl_sub.setText(display_text)
+        self.lbl_time.setText(time.strftime("%I:%M %p"))
 
     def increment_unread(self):
         self.unread_count += 1
@@ -131,9 +166,11 @@ class PeerItemWidget(QWidget):
 
 
 class PeerListSidebar(QWidget):
-    """Sidebar widget with search, pinned broadcast channel, and live peers list."""
+    """WhatsApp Desktop style Sidebar with Header, Search bar, and Peer List."""
 
     sig_peer_selected = pyqtSignal(str)  # emitted with peer_ip or BROADCAST_ID
+    sig_quick_scan = pyqtSignal()
+    sig_quick_add = pyqtSignal()
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -146,25 +183,60 @@ class PeerListSidebar(QWidget):
         layout.setContentsMargins(0, 0, 0, 0)
         layout.setSpacing(0)
 
-        # Header Search Area
+        # Header: "Chats" Title + Quick Action Icons
         header_widget = QWidget()
         header_widget.setObjectName("sidebarHeader")
-        header_layout = QVBoxLayout(header_widget)
-        header_layout.setContentsMargins(12, 12, 12, 12)
+        h_layout = QHBoxLayout(header_widget)
+        h_layout.setContentsMargins(16, 12, 12, 12)
 
-        self.search_input = QLineEdit()
-        self.search_input.setPlaceholderText("🔍 Search or filter devices...")
-        self.search_input.textChanged.connect(self._filter_peers)
-        header_layout.addWidget(self.search_input)
+        lbl_title = QLabel("Chats")
+        lbl_title.setObjectName("sidebarTitle")
+        h_layout.addWidget(lbl_title)
+        h_layout.addStretch()
+
+        btn_scan = QPushButton("⚡")
+        btn_scan.setToolTip("Scan local subnets for active devices")
+        btn_scan.setStyleSheet(
+            "background: transparent; color: #aebac1; font-size: 16px; border: none; "
+            "border-radius: 16px; min-width: 32px; min-height: 32px; max-width: 32px; max-height: 32px;"
+        )
+        btn_scan.setCursor(Qt.CursorShape.PointingHandCursor)
+        btn_scan.clicked.connect(lambda: self.sig_quick_scan.emit())
+        h_layout.addWidget(btn_scan)
+
+        btn_add = QPushButton("➕")
+        btn_add.setToolTip("Connect new device by IP or Domain")
+        btn_add.setStyleSheet(
+            "background: transparent; color: #aebac1; font-size: 16px; border: none; "
+            "border-radius: 16px; min-width: 32px; min-height: 32px; max-width: 32px; max-height: 32px;"
+        )
+        btn_add.setCursor(Qt.CursorShape.PointingHandCursor)
+        btn_add.clicked.connect(lambda: self.sig_quick_add.emit())
+        h_layout.addWidget(btn_add)
 
         layout.addWidget(header_widget)
 
-        # List Widget
-        self.list_widget = QListWidget()
-        self.list_widget.itemClicked.connect(self._on_item_clicked)
-        layout.addWidget(self.list_widget)
+        # Search Bar Container
+        search_box_container = QWidget()
+        search_box_container.setObjectName("searchContainer")
+        sb_layout = QHBoxLayout(search_box_container)
+        sb_layout.setContentsMargins(12, 6, 12, 8)
 
-        # Add Permanent Pinned Broadcast Channel at top
+        self.search_input = QLineEdit()
+        self.search_input.setObjectName("searchBox")
+        self.search_input.setPlaceholderText("🔍  Search or start new chat")
+        self.search_input.textChanged.connect(self._filter_peers)
+        sb_layout.addWidget(self.search_input)
+
+        layout.addWidget(search_box_container)
+
+        # Peer List View
+        self.list_widget = QListWidget()
+        self.list_widget.setObjectName("peerList")
+        self.list_widget.itemClicked.connect(self._on_item_clicked)
+        layout.addWidget(self.list_widget, 1)
+
+        # Pinned Broadcast Channel
         self._add_broadcast_channel()
 
     def _add_broadcast_channel(self):
