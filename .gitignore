@@ -1,0 +1,20 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.spec
+
+# Build outputs
+build/
+dist/
+*.part
+
+# Logs and system files
+*.log
+*.tmp
+.system_generated/
+bin/playit*
+
+# OS specific
+Thumbs.db
+Desktop.ini
