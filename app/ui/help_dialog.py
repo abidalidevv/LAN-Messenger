@@ -132,18 +132,33 @@ class UserGuideDialog(QDialog):
 
         # Tab 6: Remote Friend (Tailscale)
         t6 = self._create_browser("""
-            <h3 style="color:#00a884;">🌍 6. Shehar / Ghar Se Bahar Dost Se Connect Hona (Tailscale)</h3>
+            <h3 style="color:#00a884;">🌍 6. Shehar / Ghar Se Bahar Dost Se Connect Hona (Tailscale / Playit)</h3>
             <ul style="line-height:1.7;">
                 <li>Agar dost kisi doosray ghar ya doosray shehar mein baitha hai to dono <b>100% FREE</b> connect ho sakte hain:</li>
                 <ol>
                     <li>Aap aur aap ka dost dono <b>Tailscale</b> (free app: <code>tailscale.com</code>) download karein aur Google se sign in karein.</li>
                     <li>Tailscale dono ko aik Virtual LAN IP (starts with <b>100.x.x.x</b>) de dega.</li>
                     <li>Hamare software mein <b>"➕ Connect IP"</b> dabayein aur dost ka <b>100.x.x.x</b> IP likhein.</li>
-                    <li>Dono aapas mein aisy jud jayein ge jese aik hi kamray ke Wi-Fi pr hon!</li>
+                    <li>Ya Playit.gg par Free Minecraft Java tunnel (Port 9876) bana kar link share karein!</li>
                 </ol>
             </ul>
         """)
-        tabs.addTab(t6, "🌍 Out of Home (Tailscale)")
+        tabs.addTab(t6, "🌍 Out of Home")
+
+        # Tab 7: Developer & Remote Hub
+        t7 = self._create_browser("""
+            <h3 style="color:#53bdeb;">👨‍💻 7. Developer & Official Remote Hub</h3>
+            <div style="background:#202c33; padding:12px; border-radius:8px; line-height:1.8;">
+                <p><b>Developed by:</b> <span style="color:#00a884; font-size:15px; font-weight:bold;">Abid Developer</span></p>
+                <p><b>GitHub Profile:</b> <a href="https://github.com/abidalidevv" style="color:#53bdeb;">https://github.com/abidalidevv</a></p>
+                <p><b>Source Repository:</b> <a href="https://github.com/abidalidevv/LAN-Messenger" style="color:#53bdeb;">https://github.com/abidalidevv/LAN-Messenger</a></p>
+                <hr style="border: 1px solid #2a3942; margin: 10px 0;">
+                <p><b>🌐 Official Remote Server / Hub Link:</b></p>
+                <p style="font-family: Consolas, monospace; background:#111b21; padding:8px 12px; border-radius:6px; color:#e9edef; font-size:14px;"><b>shrimp-cigars.tun.ply.gg</b></p>
+                <p style="color:#8696a0; font-size:12px;">Is address ko 'Connect IP' mein daal kar Abid Developer ke sath direct connect ho sakte hain.</p>
+            </div>
+        """)
+        tabs.addTab(t7, "👨‍💻 Developer")
 
         layout.addWidget(tabs, 1)
 

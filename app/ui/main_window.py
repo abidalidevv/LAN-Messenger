@@ -27,6 +27,7 @@ from .network_dialog import NetworkStatusDialog
 from .qr_dialog import QRCodeDialog
 from .playit_dialog import PlayitTunnelDialog
 from .help_dialog import UserGuideDialog
+from .about_dialog import AboutDialog
 from .call_dialog import IncomingCallDialog, ActiveCallDialog
 from .screen_viewer import ScreenShareViewer
 from .tray import TrayManager
@@ -138,6 +139,14 @@ class MainWindow(QMainWindow):
         btn_settings.clicked.connect(self._open_settings)
         tb_layout.addWidget(btn_settings)
 
+        btn_about = QPushButton("👨‍💻 Developer")
+        btn_about.setToolTip("About Developer & Links (Abid Developer)")
+        btn_about.setStyleSheet(
+            "background-color: #1f2c34; color: #53bdeb; border: 1px solid #53bdeb; font-weight: bold;"
+        )
+        btn_about.clicked.connect(self._open_about_dialog)
+        tb_layout.addWidget(btn_about)
+
         root_layout.addWidget(toolbar)
 
         # Central Splitter (Sidebar + Chat)
@@ -164,7 +173,16 @@ class MainWindow(QMainWindow):
 
         self.lbl_status_ip = QLabel("Starting network engine...")
         self.lbl_status_peers = QLabel("0 devices found")
+        self.lbl_dev_brand = QPushButton("👨‍💻 Abid Developer")
+        self.lbl_dev_brand.setToolTip("Click to view Abid Developer profile & remote links")
+        self.lbl_dev_brand.setStyleSheet(
+            "color: #00a884; font-size: 11px; font-weight: bold; background: transparent; border: none; padding-right: 10px;"
+        )
+        self.lbl_dev_brand.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.lbl_dev_brand.clicked.connect(self._open_about_dialog)
+
         self.status_bar.addWidget(self.lbl_status_ip, 1)
+        self.status_bar.addPermanentWidget(self.lbl_dev_brand)
         self.status_bar.addPermanentWidget(self.lbl_status_peers)
 
     def init_tray(self):
@@ -553,6 +571,22 @@ class MainWindow(QMainWindow):
     def _open_user_guide(self):
         dlg = UserGuideDialog(self)
         dlg.exec()
+
+    def _open_about_dialog(self):
+        dlg = AboutDialog(self)
+        dlg.sig_connect_hub.connect(self._on_connect_hub_requested)
+        dlg.exec()
+
+    def _on_connect_hub_requested(self, hub_addr: str):
+        self.engine.add_manual_peer(hub_addr)
+        self.active_peer_ip = hub_addr
+        self.sidebar.add_or_update_peer({
+            "ip": hub_addr,
+            "username": "Abid Developer Hub",
+            "port": 9876,
+            "status": "online",
+        })
+        self.sidebar.select_peer(hub_addr)
 
     def _open_settings(self):
         dlg = SetupDialog(self, is_settings_mode=True)

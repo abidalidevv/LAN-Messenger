@@ -140,5 +140,14 @@ Tool/
 
 ---
 
+## 👨‍💻 Developer & Official Hub
+
+- **Lead Developer:** **Abid Developer** ([@abidalidevv](https://github.com/abidalidevv))
+- **Source Repository:** [https://github.com/abidalidevv/LAN-Messenger](https://github.com/abidalidevv/LAN-Messenger)
+- **Official Remote Hub / Playit Tunnel:** `shrimp-cigars.tun.ply.gg`
+- **Connect:** Enter `shrimp-cigars.tun.ply.gg` in **"➕ Connect IP"** to connect with Abid Developer across the internet.
+
+---
+
 ## 📄 License
 MIT License. Free for personal, home, and commercial use.

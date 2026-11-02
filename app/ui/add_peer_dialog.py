@@ -100,12 +100,23 @@ class AddPeerDialog(QDialog):
         desc.setStyleSheet("color: #8696a0; font-size: 12px;")
         layout.addWidget(desc)
 
+        # Developer Hub Quick Connect Banner
+        btn_dev_hub = QPushButton(
+            "⚡ Quick Connect: Abid Developer Remote Hub (shrimp-cigars.tun.ply.gg)"
+        )
+        btn_dev_hub.setStyleSheet(
+            "background-color: #111b21; color: #00a884; border: 1px solid #00a884; font-weight: bold; padding: 8px; border-radius: 8px;"
+        )
+        btn_dev_hub.setCursor(Qt.CursorShape.PointingHandCursor)
+        btn_dev_hub.clicked.connect(self._connect_developer_hub)
+        layout.addWidget(btn_dev_hub)
+
         # Tailscale Helper Banner Button
         btn_tailscale = QPushButton(
-            "🌍 Friend in another city? Click for Free Tailscale Guide"
+            "🌍 Friend in another city? Click for Free Tailscale / Playit Guide"
         )
         btn_tailscale.setStyleSheet(
-            "background-color: #1f2c34; color: #00a884; border: 1px dashed #00a884; font-weight: bold; padding: 8px; border-radius: 8px;"
+            "background-color: #1f2c34; color: #53bdeb; border: 1px dashed #53bdeb; font-weight: bold; padding: 8px; border-radius: 8px;"
         )
         btn_tailscale.setCursor(Qt.CursorShape.PointingHandCursor)
         btn_tailscale.clicked.connect(self._open_tailscale_popup)
@@ -115,7 +126,7 @@ class AddPeerDialog(QDialog):
         input_layout = QHBoxLayout()
         self.ip_input = QLineEdit()
         self.ip_input.setPlaceholderText(
-            "e.g. 192.168.7.5, 192.168.100.8, or Tailscale 100.x.x.x"
+            "e.g. 192.168.7.5, shrimp-cigars.tun.ply.gg, or 100.x.x.x"
         )
         btn_connect = QPushButton("Connect")
         btn_connect.setObjectName("primaryAction")
@@ -167,23 +178,40 @@ class AddPeerDialog(QDialog):
         if dlg.exec():
             self.ip_input.setFocus()
 
+    def _connect_developer_hub(self):
+        hub = "shrimp-cigars.tun.ply.gg"
+        self.ip_input.setText(hub)
+        self._on_manual_add()
+
+    def _is_valid_address(self, addr: str) -> bool:
+        if not addr:
+            return False
+        host = addr
+        if ":" in addr:
+            host, port_str = addr.rsplit(":", 1)
+            if not port_str.isdigit() or not (1 <= int(port_str) <= 65535):
+                return False
+        parts = host.split(".")
+        if len(parts) == 4 and all(p.isdigit() and 0 <= int(p) <= 255 for p in parts):
+            return True
+        if len(parts) >= 2 and all(len(p) > 0 for p in parts):
+            return True
+        return False
+
     def _on_manual_add(self):
-        ip = self.ip_input.text().strip()
-        parts = ip.split(".")
-        if len(parts) != 4 or not all(
-            p.isdigit() and 0 <= int(p) <= 255 for p in parts
-        ):
+        target = self.ip_input.text().strip()
+        if not self._is_valid_address(target):
             QMessageBox.warning(
                 self,
-                "Invalid IP",
-                "Please enter a valid IPv4 address (e.g. 192.168.7.12 or Tailscale 100.x.x.x)",
+                "Invalid Address",
+                "Please enter a valid IPv4 address (e.g. 192.168.7.12) or Playit/Remote domain (e.g. shrimp-cigars.tun.ply.gg)",
             )
             return
 
         if self.engine:
-            self.engine.add_manual_peer(ip)
+            self.engine.add_manual_peer(target)
 
-        self.sig_peer_selected.emit(ip)
+        self.sig_peer_selected.emit(target)
         self.accept()
 
     def _on_scan_clicked(self):

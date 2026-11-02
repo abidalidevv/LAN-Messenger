@@ -178,7 +178,17 @@ class NetworkEngine(QObject):
 
         # Connect outbound
         try:
-            reader, writer = await asyncio.open_connection(peer_ip, self.tcp_port)
+            target_host = peer_ip
+            target_port = self.peers.get(peer_ip, {}).get("port", self.tcp_port)
+            if ":" in peer_ip:
+                host_part, port_str = peer_ip.rsplit(":", 1)
+                target_host = host_part
+                try:
+                    target_port = int(port_str)
+                except ValueError:
+                    pass
+
+            reader, writer = await asyncio.open_connection(target_host, target_port)
             new_conn = PeerConnection(
                 peer_ip=peer_ip,
                 reader=reader,

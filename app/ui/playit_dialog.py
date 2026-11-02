@@ -78,6 +78,10 @@ class PlayitTunnelDialog(QDialog):
 
         # Instructions / Buttons
         btn_row = QHBoxLayout()
+        btn_hub = QPushButton("⚡ Insert Abid Developer Hub")
+        btn_hub.clicked.connect(lambda: self.addr_input.setText("shrimp-cigars.tun.ply.gg"))
+        btn_row.addWidget(btn_hub)
+
         btn_dash = QPushButton("🌐 Open Playit Dashboard (View Tunnels)")
         btn_dash.clicked.connect(
             lambda: webbrowser.open("https://playit.gg/manage")
