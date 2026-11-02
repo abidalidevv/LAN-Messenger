@@ -161,3 +161,4 @@ class AboutDialog(QDialog):
     def _connect_to_hub(self):
         self.sig_connect_hub.emit(self.REMOTE_HUB)
         self.accept()
+
