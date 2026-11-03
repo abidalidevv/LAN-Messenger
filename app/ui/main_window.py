@@ -21,6 +21,7 @@ from PyQt6.QtGui import QIcon, QCloseEvent
 from .styles import DARK_THEME_QSS
 from .peer_list import PeerListSidebar
 from .chat_panel import ChatPanel
+from .peer_info_panel import PeerInfoPanel
 from .setup_dialog import SetupDialog
 from .add_peer_dialog import AddPeerDialog
 from .network_dialog import NetworkStatusDialog
@@ -35,6 +36,7 @@ from .sound import play_message_sound, play_transfer_complete_sound
 from ..config import config
 from ..network.engine import NetworkEngine
 from ..network.media_engine import AudioCallManager, ScreenShareManager
+from ..utils.avatars import get_avatar
 from ..utils.paths import get_asset_path
 from ..utils.file_helper import format_size, show_in_file_manager
 from ..utils.history import history
@@ -47,8 +49,8 @@ class MainWindow(QMainWindow):
         super().__init__()
         self.engine = network_engine
         self.setWindowTitle(f"LAN Messenger — {config.username}")
-        self.resize(1020, 680)
-        self.setMinimumSize(780, 500)
+        self.resize(1200, 760)
+        self.setMinimumSize(850, 520)
 
         # Apply dark theme
         self.setStyleSheet(DARK_THEME_QSS)
@@ -80,66 +82,72 @@ class MainWindow(QMainWindow):
         main_layout.setContentsMargins(0, 0, 0, 0)
         main_layout.setSpacing(0)
 
-        # 1. Left Navigation Rail (62px WhatsApp/Telegram Style)
+        # 1. Left Navigation Rail (68px Reference Spec / Midnight Violet #1E1338)
         nav_rail = QWidget()
         nav_rail.setObjectName("navRail")
         nr_layout = QVBoxLayout(nav_rail)
-        nr_layout.setContentsMargins(0, 8, 0, 8)
-        nr_layout.setSpacing(4)
+        nr_layout.setContentsMargins(0, 10, 0, 10)
+        nr_layout.setSpacing(6)
 
-        # Brand button
-        btn_brand = QPushButton("💬")
-        btn_brand.setProperty("class", "navBtnBrand")
-        btn_brand.setToolTip(f"LAN Messenger v2.5 — {config.username}")
-        nr_layout.addWidget(btn_brand)
+        # Top User Profile Avatar with Online Status
+        user_av = get_avatar(config.avatar_id)
+        self.btn_profile = QPushButton(user_av["icon"])
+        self.btn_profile.setToolTip(f"{config.username} (Online)\nClick to edit profile")
+        self.btn_profile.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.btn_profile.setStyleSheet(
+            f"background: {user_av['bg']}; color: #FFFFFF; font-size: 20px; border-radius: 24px; "
+            "min-width: 48px; max-width: 48px; min-height: 48px; max-height: 48px; border: 2px solid #583BBF;"
+        )
+        self.btn_profile.clicked.connect(self._open_settings)
+        nr_layout.addWidget(self.btn_profile, alignment=Qt.AlignmentFlag.AlignCenter)
 
         # Chats Nav button (Active)
         self.btn_nav_chats = QPushButton("💬")
         self.btn_nav_chats.setProperty("class", "navBtn navBtnActive")
         self.btn_nav_chats.setToolTip("Chats")
-        nr_layout.addWidget(self.btn_nav_chats)
+        nr_layout.addWidget(self.btn_nav_chats, alignment=Qt.AlignmentFlag.AlignCenter)
 
         # Broadcast Nav button
         self.btn_nav_broadcast = QPushButton("📢")
         self.btn_nav_broadcast.setProperty("class", "navBtn")
         self.btn_nav_broadcast.setToolTip("Group Broadcast (All Devices)")
         self.btn_nav_broadcast.clicked.connect(self._select_broadcast)
-        nr_layout.addWidget(self.btn_nav_broadcast)
+        nr_layout.addWidget(self.btn_nav_broadcast, alignment=Qt.AlignmentFlag.AlignCenter)
 
         # Scan LAN Nav button
         self.btn_nav_scan = QPushButton("⚡")
         self.btn_nav_scan.setProperty("class", "navBtn")
         self.btn_nav_scan.setToolTip("Scan Network for Devices (Huawei & Tenda)")
         self.btn_nav_scan.clicked.connect(self._scan_subnets)
-        nr_layout.addWidget(self.btn_nav_scan)
+        nr_layout.addWidget(self.btn_nav_scan, alignment=Qt.AlignmentFlag.AlignCenter)
 
         # Connect IP Nav button
         self.btn_nav_add = QPushButton("➕")
         self.btn_nav_add.setProperty("class", "navBtn")
         self.btn_nav_add.setToolTip("Connect PC by IP or Domain")
         self.btn_nav_add.clicked.connect(self._open_add_peer)
-        nr_layout.addWidget(self.btn_nav_add)
+        nr_layout.addWidget(self.btn_nav_add, alignment=Qt.AlignmentFlag.AlignCenter)
 
         # Mobile QR Nav button
         self.btn_nav_mobile = QPushButton("📱")
         self.btn_nav_mobile.setProperty("class", "navBtn")
         self.btn_nav_mobile.setToolTip("Connect Mobile Phone via QR Code")
         self.btn_nav_mobile.clicked.connect(self._open_mobile_qr)
-        nr_layout.addWidget(self.btn_nav_mobile)
+        nr_layout.addWidget(self.btn_nav_mobile, alignment=Qt.AlignmentFlag.AlignCenter)
 
         # Internet Link (Playit) Nav button
         self.btn_nav_playit = QPushButton("🌐")
         self.btn_nav_playit.setProperty("class", "navBtn")
         self.btn_nav_playit.setToolTip("Playit.gg Internet Link (Connect Friends Worldwide)")
         self.btn_nav_playit.clicked.connect(self._open_playit_dialog)
-        nr_layout.addWidget(self.btn_nav_playit)
+        nr_layout.addWidget(self.btn_nav_playit, alignment=Qt.AlignmentFlag.AlignCenter)
 
         # Downloads Nav button
         self.btn_nav_downloads = QPushButton("📁")
         self.btn_nav_downloads.setProperty("class", "navBtn")
         self.btn_nav_downloads.setToolTip("Open Downloads Folder")
         self.btn_nav_downloads.clicked.connect(self._open_downloads_folder)
-        nr_layout.addWidget(self.btn_nav_downloads)
+        nr_layout.addWidget(self.btn_nav_downloads, alignment=Qt.AlignmentFlag.AlignCenter)
 
         nr_layout.addStretch()
 
@@ -148,25 +156,32 @@ class MainWindow(QMainWindow):
         self.btn_nav_dev.setProperty("class", "navBtn")
         self.btn_nav_dev.setToolTip("Abid Developer Profile & Remote Hub")
         self.btn_nav_dev.clicked.connect(self._open_about_dialog)
-        nr_layout.addWidget(self.btn_nav_dev)
+        nr_layout.addWidget(self.btn_nav_dev, alignment=Qt.AlignmentFlag.AlignCenter)
 
         # User Guide
         self.btn_nav_guide = QPushButton("📖")
         self.btn_nav_guide.setProperty("class", "navBtn")
         self.btn_nav_guide.setToolTip("User Guide & Documentation")
         self.btn_nav_guide.clicked.connect(self._open_user_guide)
-        nr_layout.addWidget(self.btn_nav_guide)
+        nr_layout.addWidget(self.btn_nav_guide, alignment=Qt.AlignmentFlag.AlignCenter)
 
         # Settings
         self.btn_nav_settings = QPushButton("⚙️")
         self.btn_nav_settings.setProperty("class", "navBtn")
         self.btn_nav_settings.setToolTip("Settings & Profile")
         self.btn_nav_settings.clicked.connect(self._open_settings)
-        nr_layout.addWidget(self.btn_nav_settings)
+        nr_layout.addWidget(self.btn_nav_settings, alignment=Qt.AlignmentFlag.AlignCenter)
+
+        # Exit
+        self.btn_nav_exit = QPushButton("🚪")
+        self.btn_nav_exit.setProperty("class", "navBtn")
+        self.btn_nav_exit.setToolTip("Cerrar / Exit LAN Messenger")
+        self.btn_nav_exit.clicked.connect(self._force_exit)
+        nr_layout.addWidget(self.btn_nav_exit, alignment=Qt.AlignmentFlag.AlignCenter)
 
         main_layout.addWidget(nav_rail)
 
-        # 2. Central Splitter (Sidebar + Chat Panel)
+        # 2. Central Splitter (Column 2: Sidebar + Column 3: Chat Panel)
         self.splitter = QSplitter(Qt.Orientation.Horizontal)
         self.splitter.setHandleWidth(1)
 
@@ -181,12 +196,21 @@ class MainWindow(QMainWindow):
         self.chat_panel.sig_send_file.connect(self._on_send_file)
         self.chat_panel.sig_start_call.connect(self._start_call)
         self.chat_panel.sig_start_screenshare.connect(self._start_screenshare)
+        self.chat_panel.sig_toggle_info_panel.connect(self._toggle_info_panel)
         self.splitter.addWidget(self.chat_panel)
 
-        self.splitter.setSizes([310, 710])
+        self.splitter.setSizes([300, 590])
         main_layout.addWidget(self.splitter, 1)
 
-        # 3. Modern Status Bar
+        # 3. Column 4: Right Device Details Panel (WhatsApp style, Minimizable / Closeable)
+        self.info_panel = PeerInfoPanel()
+        self.info_panel.setFixedWidth(310)
+        self.info_panel.sig_close_panel.connect(self._close_info_panel)
+        self.info_panel.sig_start_call.connect(self._start_call)
+        self.info_panel.sig_start_screen.connect(self._start_screenshare)
+        main_layout.addWidget(self.info_panel)
+
+        # 4. Modern Status Bar
         self.status_bar = QStatusBar()
         self.setStatusBar(self.status_bar)
 
@@ -195,7 +219,7 @@ class MainWindow(QMainWindow):
         self.lbl_dev_brand = QPushButton("👨‍💻 Abid Developer")
         self.lbl_dev_brand.setToolTip("Click to view Abid Developer profile & remote links")
         self.lbl_dev_brand.setStyleSheet(
-            "color: #00a884; font-size: 11px; font-weight: bold; background: transparent; border: none; padding-right: 10px;"
+            "color: #DDD7FB; font-size: 11px; font-weight: bold; background: transparent; border: none; padding-right: 10px;"
         )
         self.lbl_dev_brand.setCursor(Qt.CursorShape.PointingHandCursor)
         self.lbl_dev_brand.clicked.connect(self._open_about_dialog)
@@ -257,14 +281,13 @@ class MainWindow(QMainWindow):
     def _on_peer_status_changed(self, ip: str, status: str):
         self.sidebar.update_peer_status(ip, status)
         if self.active_peer_ip == ip:
-            username = (
-                self.sidebar.peer_widgets[ip].username
-                if ip in self.sidebar.peer_widgets
-                else ip
-            )
+            widget = self.sidebar.peer_widgets.get(ip)
+            username = widget.username if widget else f"Peer @ {ip}"
+            avatar_id = widget.avatar_id if widget else "gamer"
             self.chat_panel.lbl_peer_status.setText(
-                f"{ip} • {'🟢 Online' if status == 'online' else '⚪ Offline'}"
+                f"{ip} • {'🟢 En línea' if status == 'online' else '⚪ Desconectado'}"
             )
+            self.info_panel.set_peer_info(ip, username, status, avatar_id)
 
     @pyqtSlot(str)
     def _on_peer_selected(self, ip: str):
@@ -272,8 +295,10 @@ class MainWindow(QMainWindow):
         widget = self.sidebar.peer_widgets.get(ip)
         username = widget.username if widget else f"Peer @ {ip}"
         status = widget.status if widget else "online"
+        avatar_id = widget.avatar_id if widget else "gamer"
 
-        self.chat_panel.set_active_peer(ip, username, status)
+        self.chat_panel.set_active_peer(ip, username, status, avatar_id)
+        self.info_panel.set_peer_info(ip, username, status, avatar_id)
 
         # Load persisted history
         msgs = history.get_messages(ip)
@@ -288,6 +313,12 @@ class MainWindow(QMainWindow):
                     timestamp=m.get("timestamp", time.time()),
                     is_completed=True,
                 )
+                if finfo.get("filepath"):
+                    self.info_panel.add_shared_file(
+                        finfo.get("filepath", ""),
+                        finfo.get("filename", "file"),
+                        finfo.get("filesize", 0),
+                    )
             else:
                 self.chat_panel.add_text_bubble(
                     text=m.get("text", ""),
@@ -362,6 +393,7 @@ class MainWindow(QMainWindow):
 
     @pyqtSlot(str, str, str, int)
     def _on_file_sent(self, peer_ip: str, filepath: str, filename: str, filesize: int):
+        self.info_panel.add_shared_file(filepath, filename, filesize)
         history.add_message(
             peer_ip=peer_ip,
             sender=config.username,
@@ -391,6 +423,7 @@ class MainWindow(QMainWindow):
     def _on_file_received(
         self, peer_ip: str, filepath: str, filename: str, filesize: int
     ):
+        self.info_panel.add_shared_file(filepath, filename, filesize)
         peer_widget = self.sidebar.peer_widgets.get(peer_ip)
         sender_name = peer_widget.username if peer_widget else f"PC @ {peer_ip}"
 
@@ -609,11 +642,24 @@ class MainWindow(QMainWindow):
         })
         self.sidebar.select_peer(hub_addr)
 
+    def _toggle_info_panel(self):
+        self.info_panel.setVisible(not self.info_panel.isVisible())
+
+    def _close_info_panel(self):
+        self.info_panel.setVisible(False)
+
     def _open_settings(self):
         dlg = SetupDialog(self, is_settings_mode=True)
         if dlg.exec():
             self.setWindowTitle(f"LAN Messenger — {config.username}")
             self.engine.update_username(config.username)
+            user_av = get_avatar(config.avatar_id)
+            self.btn_profile.setText(user_av["icon"])
+            self.btn_profile.setStyleSheet(
+                f"background: {user_av['bg']}; color: #FFFFFF; font-size: 20px; border-radius: 24px; "
+                "min-width: 48px; max-width: 48px; min-height: 48px; max-height: 48px; border: 2px solid #583BBF;"
+            )
+            self.btn_profile.setToolTip(f"{config.username} (Online)\nClick to edit profile")
 
     def _restore_window(self):
         self.show()

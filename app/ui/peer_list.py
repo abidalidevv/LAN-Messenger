@@ -18,7 +18,7 @@ BROADCAST_ID = "BROADCAST"
 
 
 class PeerItemWidget(QWidget):
-    """Modern WhatsApp Desktop / Telegram styled peer list item."""
+    """WhatsApp & Dribbble styled clean white peer list item."""
 
     def __init__(
         self,
@@ -38,65 +38,71 @@ class PeerItemWidget(QWidget):
         self.unread_count = 0
         self.last_msg = ""
         self.last_time = time.time()
+        self.time_label_text = "1m"
         self.init_ui()
 
     def init_ui(self):
         layout = QHBoxLayout(self)
-        layout.setContentsMargins(10, 8, 10, 8)
+        layout.setContentsMargins(8, 8, 8, 8)
         layout.setSpacing(12)
 
         # Avatar Container with Online Indicator Ring
         avatar_container = QWidget()
-        avatar_container.setFixedSize(50, 50)
+        avatar_container.setFixedSize(48, 48)
         ac_layout = QVBoxLayout(avatar_container)
         ac_layout.setContentsMargins(0, 0, 0, 0)
 
         self.avatar = QLabel(avatar_container)
-        self.avatar.setFixedSize(48, 48)
+        self.avatar.setFixedSize(46, 46)
         self.avatar.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self._render_avatar()
 
         # Online Status Ring Badge (Bottom Right of Avatar)
         self.status_badge = QLabel(avatar_container)
-        self.status_badge.setFixedSize(14, 14)
-        self.status_badge.move(34, 34)
+        self.status_badge.setFixedSize(12, 12)
+        self.status_badge.move(32, 32)
         self._update_status_badge()
 
         layout.addWidget(avatar_container)
 
         # Info column (Name, Last Message, Timestamp)
         info_col = QVBoxLayout()
-        info_col.setContentsMargins(0, 2, 0, 2)
-        info_col.setSpacing(4)
+        info_col.setContentsMargins(0, 1, 0, 1)
+        info_col.setSpacing(3)
 
         # Top Row: Name + Time
         top_row = QHBoxLayout()
         top_row.setContentsMargins(0, 0, 0, 0)
         self.lbl_name = QLabel(self.username)
         self.lbl_name.setStyleSheet(
-            "font-weight: 600; font-size: 14px; color: #e9edef;"
+            "font-weight: 700; font-size: 14px; color: #1E1338;"
         )
         top_row.addWidget(self.lbl_name)
         top_row.addStretch()
 
-        self.lbl_time = QLabel("")
-        self.lbl_time.setStyleSheet("font-size: 11px; color: #8696a0;")
+        self.lbl_time = QLabel(self.time_label_text)
+        self.lbl_time.setStyleSheet("font-size: 11px; color: #9494B8; font-weight: 500;")
         top_row.addWidget(self.lbl_time)
         info_col.addLayout(top_row)
 
-        # Bottom Row: Last Message Snippet + Unread Badge
+        # Bottom Row: Last Message Snippet + Unread Badge / Read Checks
         bot_row = QHBoxLayout()
         bot_row.setContentsMargins(0, 0, 0, 0)
         self.lbl_sub = QLabel(
-            "Tap to broadcast to all devices" if self.is_broadcast else self.ip
+            "Broadcast to all connected devices" if self.is_broadcast else self.ip
         )
-        self.lbl_sub.setStyleSheet("font-size: 12px; color: #8696a0;")
+        self.lbl_sub.setStyleSheet("font-size: 12px; color: #8696A0;")
         bot_row.addWidget(self.lbl_sub, 1)
+
+        self.lbl_checks = QLabel("✓✓")
+        self.lbl_checks.setStyleSheet("color: #9494B8; font-size: 11px; font-weight: bold;")
+        self.lbl_checks.setVisible(not self.is_broadcast)
+        bot_row.addWidget(self.lbl_checks)
 
         self.lbl_badge = QLabel("")
         self.lbl_badge.setStyleSheet(
-            "background-color: #00a884; color: #111b21; font-weight: bold; "
-            "font-size: 11px; border-radius: 9px; min-width: 18px; max-height: 18px; "
+            "background-color: #7C5CFC; color: #FFFFFF; font-weight: 800; "
+            "font-size: 10px; border-radius: 9px; min-width: 18px; max-height: 18px; "
             "qproperty-alignment: AlignCenter; padding: 1px 5px;"
         )
         self.lbl_badge.setVisible(False)
@@ -108,16 +114,16 @@ class PeerItemWidget(QWidget):
     def _render_avatar(self):
         if self.is_broadcast:
             self.avatar.setStyleSheet(
-                "background: qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 #00a884, stop:1 #005c4b); "
-                "color: #ffffff; border-radius: 24px; font-size: 22px;"
+                "background: qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 #7C5CFC, stop:1 #4928BA); "
+                "color: #FFFFFF; border-radius: 23px; font-size: 20px;"
             )
             self.avatar.setText("📢")
             return
 
         av = get_avatar(self.avatar_id)
         self.avatar.setStyleSheet(
-            f"background: qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 {av['bg']}, stop:1 #111b21); "
-            f"color: #ffffff; border-radius: 24px; font-size: 22px; border: 1px solid rgba(255, 255, 255, 0.08);"
+            f"background: qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 {av['bg']}, stop:1 #1E1338); "
+            f"color: #FFFFFF; border-radius: 23px; font-size: 20px; border: 1px solid rgba(0, 0, 0, 0.06);"
         )
         self.avatar.setText(av["icon"])
 
@@ -127,9 +133,9 @@ class PeerItemWidget(QWidget):
             return
 
         is_online = (self.status == "online")
-        dot_color = "#00a884" if is_online else "#8696a0"
+        dot_color = "#00D26A" if is_online else "#B0B3C7"
         self.status_badge.setStyleSheet(
-            f"background-color: {dot_color}; border: 2px solid #111b21; border-radius: 7px;"
+            f"background-color: {dot_color}; border: 2px solid #FFFFFF; border-radius: 6px;"
         )
         self.status_badge.setVisible(True)
 
@@ -149,26 +155,28 @@ class PeerItemWidget(QWidget):
             self.status = status
             self._update_status_badge()
 
-    def set_last_message(self, text: str):
+    def set_last_message(self, text: str, time_str: str = "now"):
         self.last_msg = text
-        display_text = (text[:28] + "...") if len(text) > 28 else text
+        display_text = (text[:26] + "...") if len(text) > 26 else text
         self.lbl_sub.setText(display_text)
-        self.lbl_time.setText(time.strftime("%I:%M %p"))
+        self.lbl_time.setText(time_str)
 
     def increment_unread(self):
         self.unread_count += 1
         self.lbl_badge.setText(str(self.unread_count))
         self.lbl_badge.setVisible(True)
+        self.lbl_checks.setVisible(False)
 
     def clear_unread(self):
         self.unread_count = 0
         self.lbl_badge.setVisible(False)
+        self.lbl_checks.setVisible(not self.is_broadcast)
 
 
 class PeerListSidebar(QWidget):
-    """WhatsApp Desktop style Sidebar with Header, Search bar, and Peer List."""
+    """WhatsApp & Dribbble style Clean White Sidebar with Chips and Floating New Chat."""
 
-    sig_peer_selected = pyqtSignal(str)  # emitted with peer_ip or BROADCAST_ID
+    sig_peer_selected = pyqtSignal(str)
     sig_quick_scan = pyqtSignal()
     sig_quick_add = pyqtSignal()
 
@@ -176,6 +184,7 @@ class PeerListSidebar(QWidget):
         super().__init__(parent)
         self.setObjectName("sidebar")
         self.peer_widgets: Dict[str, PeerItemWidget] = {}
+        self.current_filter = "todos"  # "todos", "unread", "grupos"
         self.init_ui()
 
     def init_ui(self):
@@ -183,11 +192,11 @@ class PeerListSidebar(QWidget):
         layout.setContentsMargins(0, 0, 0, 0)
         layout.setSpacing(0)
 
-        # Header: "Chats" Title + Quick Action Icons
+        # 1. Header: "Chats" + Quick Scan
         header_widget = QWidget()
         header_widget.setObjectName("sidebarHeader")
         h_layout = QHBoxLayout(header_widget)
-        h_layout.setContentsMargins(16, 12, 12, 12)
+        h_layout.setContentsMargins(16, 14, 16, 6)
 
         lbl_title = QLabel("Chats")
         lbl_title.setObjectName("sidebarTitle")
@@ -195,55 +204,97 @@ class PeerListSidebar(QWidget):
         h_layout.addStretch()
 
         btn_scan = QPushButton("⚡")
-        btn_scan.setToolTip("Scan local subnets for active devices")
+        btn_scan.setToolTip("Scan local subnets for devices")
         btn_scan.setStyleSheet(
-            "background: transparent; color: #aebac1; font-size: 16px; border: none; "
-            "border-radius: 16px; min-width: 32px; min-height: 32px; max-width: 32px; max-height: 32px;"
+            "background: #F4F5FB; color: #7C5CFC; font-size: 14px; border: none; "
+            "border-radius: 15px; min-width: 30px; min-height: 30px; font-weight: bold;"
         )
         btn_scan.setCursor(Qt.CursorShape.PointingHandCursor)
         btn_scan.clicked.connect(lambda: self.sig_quick_scan.emit())
         h_layout.addWidget(btn_scan)
 
-        btn_add = QPushButton("➕")
-        btn_add.setToolTip("Connect new device by IP or Domain")
-        btn_add.setStyleSheet(
-            "background: transparent; color: #aebac1; font-size: 16px; border: none; "
-            "border-radius: 16px; min-width: 32px; min-height: 32px; max-width: 32px; max-height: 32px;"
-        )
-        btn_add.setCursor(Qt.CursorShape.PointingHandCursor)
-        btn_add.clicked.connect(lambda: self.sig_quick_add.emit())
-        h_layout.addWidget(btn_add)
-
         layout.addWidget(header_widget)
 
-        # Search Bar Container
+        # 2. Search Box Container
         search_box_container = QWidget()
         search_box_container.setObjectName("searchContainer")
         sb_layout = QHBoxLayout(search_box_container)
-        sb_layout.setContentsMargins(12, 6, 12, 8)
+        sb_layout.setContentsMargins(14, 4, 14, 8)
 
         self.search_input = QLineEdit()
         self.search_input.setObjectName("searchBox")
-        self.search_input.setPlaceholderText("🔍  Search or start new chat")
+        self.search_input.setPlaceholderText("🔍  Buscar dispositivos...")
         self.search_input.textChanged.connect(self._filter_peers)
         sb_layout.addWidget(self.search_input)
 
         layout.addWidget(search_box_container)
 
-        # Peer List View
+        # 3. Category Filter Chips (Todos, No leídos, Grupos)
+        filter_bar = QWidget()
+        filter_bar.setObjectName("filterBar")
+        fb_layout = QHBoxLayout(filter_bar)
+        fb_layout.setContentsMargins(14, 0, 14, 8)
+        fb_layout.setSpacing(6)
+
+        self.chip_all = QPushButton("Todos")
+        self.chip_all.setProperty("class", "filterChip filterChipActive")
+        self.chip_all.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.chip_all.clicked.connect(lambda: self._set_filter("todos"))
+        fb_layout.addWidget(self.chip_all)
+
+        self.chip_unread = QPushButton("No leídos")
+        self.chip_unread.setProperty("class", "filterChip")
+        self.chip_unread.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.chip_unread.clicked.connect(lambda: self._set_filter("unread"))
+        fb_layout.addWidget(self.chip_unread)
+
+        self.chip_groups = QPushButton("Grupos")
+        self.chip_groups.setProperty("class", "filterChip")
+        self.chip_groups.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.chip_groups.clicked.connect(lambda: self._set_filter("grupos"))
+        fb_layout.addWidget(self.chip_groups)
+        fb_layout.addStretch()
+
+        layout.addWidget(filter_bar)
+
+        # 4. Peer List View
         self.list_widget = QListWidget()
         self.list_widget.setObjectName("peerList")
         self.list_widget.itemClicked.connect(self._on_item_clicked)
         layout.addWidget(self.list_widget, 1)
 
+        # 5. Bottom Floating Action: "Nuevo chat 💬+"
+        btn_new_chat = QPushButton("Nuevo chat  ➕")
+        btn_new_chat.setObjectName("btnNewChat")
+        btn_new_chat.setCursor(Qt.CursorShape.PointingHandCursor)
+        btn_new_chat.setToolTip("Connect new device by IP address or Playit link")
+        btn_new_chat.clicked.connect(lambda: self.sig_quick_add.emit())
+        layout.addWidget(btn_new_chat)
+
         # Pinned Broadcast Channel
         self._add_broadcast_channel()
+
+    def _set_filter(self, filter_name: str):
+        self.current_filter = filter_name
+
+        self.chip_all.setProperty("class", "filterChip filterChipActive" if filter_name == "todos" else "filterChip")
+        self.chip_unread.setProperty("class", "filterChip filterChipActive" if filter_name == "unread" else "filterChip")
+        self.chip_groups.setProperty("class", "filterChip filterChipActive" if filter_name == "grupos" else "filterChip")
+
+        self.chip_all.style().unpolish(self.chip_all)
+        self.chip_all.style().polish(self.chip_all)
+        self.chip_unread.style().unpolish(self.chip_unread)
+        self.chip_unread.style().polish(self.chip_unread)
+        self.chip_groups.style().unpolish(self.chip_groups)
+        self.chip_groups.style().polish(self.chip_groups)
+
+        self._filter_peers(self.search_input.text())
 
     def _add_broadcast_channel(self):
         item = QListWidgetItem()
         widget = PeerItemWidget(
             ip=BROADCAST_ID,
-            username="📢 All Devices (Broadcast)",
+            username="All Devices (Broadcast)",
             status="online",
             is_broadcast=True,
         )
@@ -264,9 +315,7 @@ class PeerListSidebar(QWidget):
 
         if ip in self.peer_widgets:
             widget = self.peer_widgets[ip]
-            widget.update_info(
-                username=username, status=status, avatar_id=avatar_id
-            )
+            widget.update_info(username=username, status=status, avatar_id=avatar_id)
         else:
             item = QListWidgetItem()
             widget = PeerItemWidget(
@@ -286,7 +335,7 @@ class PeerListSidebar(QWidget):
     def update_last_message(self, ip: str, text: str, is_active_chat: bool = False):
         if ip in self.peer_widgets:
             widget = self.peer_widgets[ip]
-            widget.set_last_message(text)
+            widget.set_last_message(text, time_str=time.strftime("%I:%M %p"))
             if not is_active_chat:
                 widget.increment_unread()
 
@@ -306,14 +355,23 @@ class PeerListSidebar(QWidget):
                 self.peer_widgets[ip].clear_unread()
             self.sig_peer_selected.emit(ip)
 
-    def _filter_peers(self, query: str):
+    def _filter_peers(self, query: str = ""):
         query = query.lower().strip()
         for i in range(self.list_widget.count()):
             item = self.list_widget.item(i)
             ip = item.data(Qt.ItemDataRole.UserRole)
-            if ip == BROADCAST_ID:
-                continue
             widget = self.peer_widgets.get(ip)
-            if widget:
-                match = (query in ip.lower()) or (query in widget.username.lower())
-                item.setHidden(not match)
+            if not widget:
+                continue
+
+            # Query match
+            match_query = (query in ip.lower()) or (query in widget.username.lower()) or (query in widget.last_msg.lower())
+
+            # Filter chip match
+            match_chip = True
+            if self.current_filter == "unread":
+                match_chip = widget.unread_count > 0
+            elif self.current_filter == "grupos":
+                match_chip = (ip == BROADCAST_ID)
+
+            item.setHidden(not (match_query and match_chip))

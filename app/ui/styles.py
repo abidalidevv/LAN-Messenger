@@ -1,14 +1,12 @@
-"""Modern WhatsApp Desktop & Telegram inspired Dark Theme stylesheet.
-Crafted to Dribbble / Modern Desktop Messenger design standards.
+"""Modern WhatsApp Desktop, Telegram & Dribbble 4-Column Messenger Stylesheet.
+Palette: Midnight Violet (#1E1338 / #221643) + Soft Lilac (#E0DAFD / #DDD7FB) + Clean White (#FFFFFF / #F5F6FA) + Royal Purple Accent (#7C5CFC).
 """
 
 DARK_THEME_QSS = """
 /* ===================================================================
-   GLOBAL APPLICATION STYLING & TYPOGRAPHY
+   GLOBAL APPLICATION RESETS & BASE STYLING
    =================================================================== */
 QWidget {
-    background-color: #111b21;
-    color: #e9edef;
     font-family: "Segoe UI", -apple-system, BlinkMacSystemFont, "SF Pro Text", Roboto, "Helvetica Neue", sans-serif;
     font-size: 13px;
     border: none;
@@ -16,322 +14,414 @@ QWidget {
 }
 
 QMainWindow {
-    background-color: #0c1317;
+    background-color: #1E1338;
 }
 
 /* ===================================================================
-   NAVIGATION RAIL (FAR LEFT SLIM ICON BAR)
+   COLUMN 1: DEEP MIDNIGHT VIOLET NAVIGATION RAIL (68px)
    =================================================================== */
 #navRail {
-    background-color: #111b21;
-    border-right: 1px solid #202c33;
-    min-width: 62px;
-    max-width: 62px;
+    background-color: #1E1338;
+    border-right: 1px solid rgba(255, 255, 255, 0.06);
+    min-width: 68px;
+    max-width: 68px;
 }
 
-QPushButton.navBtn {
+QPushButton.navRailBtn {
     background-color: transparent;
-    color: #8696a0;
-    font-size: 20px;
-    border-radius: 12px;
-    min-width: 44px;
-    max-width: 44px;
-    min-height: 44px;
-    max-height: 44px;
+    color: #8E7FA8;
+    font-size: 18px;
+    border-radius: 14px;
+    min-width: 48px;
+    max-width: 48px;
+    min-height: 48px;
+    max-height: 48px;
     padding: 0px;
-    margin: 4px 9px;
+    margin: 3px 10px;
     border: none;
 }
 
-QPushButton.navBtn:hover {
-    background-color: #202c33;
-    color: #00a884;
+QPushButton.navRailBtn:hover {
+    background-color: #2D1D54;
+    color: #FFFFFF;
 }
 
-QPushButton.navBtn:pressed {
-    background-color: #2a3942;
-}
-
-QPushButton.navBtnActive {
-    background-color: #202c33;
-    color: #00a884;
-    border-left: 3px solid #00a884;
-    border-radius: 4px 12px 12px 4px;
-}
-
-QPushButton.navBtnBrand {
-    background: qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 #00a884, stop:1 #005c4b);
-    color: #ffffff;
-    font-size: 22px;
+QPushButton.navRailBtnActive {
+    background-color: #7C5CFC;
+    color: #FFFFFF;
     border-radius: 14px;
-    min-width: 46px;
-    max-width: 46px;
-    min-height: 46px;
-    max-height: 46px;
-    margin: 10px 8px 6px 8px;
+    box-shadow: 0 4px 12px rgba(124, 92, 252, 0.4);
+}
+
+QPushButton.navRailUserAvatar {
+    background: qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 #7C5CFC, stop:1 #5136B7);
+    color: #FFFFFF;
+    font-size: 24px;
+    border-radius: 24px;
+    min-width: 48px;
+    max-width: 48px;
+    min-height: 48px;
+    max-height: 48px;
+    margin: 12px 10px 10px 10px;
+    border: 2px solid rgba(255, 255, 255, 0.15);
 }
 
 /* ===================================================================
-   SIDEBAR & CHAT LIST (MIDDLE COLUMN)
+   COLUMN 2: CLEAN WHITE CHATS SIDEBAR (300px)
    =================================================================== */
 #sidebar {
-    background-color: #111b21;
-    border-right: 1px solid #202c33;
+    background-color: #FFFFFF;
+    border-right: 1px solid #E8EAF2;
 }
 
 #sidebarHeader {
-    background-color: #111b21;
-    padding: 12px 14px 10px 14px;
-    border-bottom: 1px solid #202c33;
+    background-color: #FFFFFF;
+    padding: 16px 16px 8px 16px;
 }
 
 #sidebarTitle {
-    font-size: 20px;
-    font-weight: 700;
-    color: #e9edef;
-    letter-spacing: -0.3px;
+    font-size: 22px;
+    font-weight: 800;
+    color: #1E1338;
+    letter-spacing: -0.4px;
 }
 
+/* Rounded Pill Search Bar */
 #searchContainer {
-    background-color: #111b21;
-    padding: 8px 12px;
-    border-bottom: 1px solid #1f2c34;
+    background-color: #FFFFFF;
+    padding: 6px 14px 10px 14px;
 }
 
 QLineEdit#searchBox {
-    background-color: #202c33;
-    color: #e9edef;
-    border: 1px solid transparent;
-    border-radius: 8px;
-    padding: 8px 12px 8px 34px;
+    background-color: #F4F5FB;
+    color: #1E1338;
+    border: 1px solid #E8EAF2;
+    border-radius: 12px;
+    padding: 9px 14px 9px 34px;
     font-size: 13px;
 }
 
 QLineEdit#searchBox:focus {
-    background-color: #202c33;
-    border: 1px solid #00a884;
+    background-color: #FFFFFF;
+    border: 1px solid #7C5CFC;
 }
 
 QLineEdit#searchBox::placeholder {
-    color: #8696a0;
+    color: #9494B8;
+}
+
+/* Filter Tag Chips (Todos, No leídos, Grupos) */
+#filterBar {
+    background-color: #FFFFFF;
+    padding: 0px 14px 10px 14px;
+}
+
+QPushButton.filterChip {
+    background-color: #F4F5FB;
+    color: #6C5FA7;
+    font-size: 11px;
+    font-weight: 700;
+    border-radius: 12px;
+    padding: 5px 12px;
+    border: none;
+    margin-right: 4px;
+}
+
+QPushButton.filterChip:hover {
+    background-color: #ECE8FE;
+    color: #7C5CFC;
+}
+
+QPushButton.filterChipActive {
+    background-color: #7C5CFC;
+    color: #FFFFFF;
+    font-weight: 800;
 }
 
 /* Peer List View */
 QListWidget#peerList {
-    background-color: #111b21;
+    background-color: #FFFFFF;
     border: none;
     outline: none;
-    padding: 4px 0px;
+    padding: 4px 6px;
 }
 
 QListWidget#peerList::item {
     background-color: transparent;
-    border-radius: 10px;
-    margin: 2px 8px;
+    border-radius: 14px;
+    margin: 2px 2px;
     padding: 0px;
     border: none;
 }
 
 QListWidget#peerList::item:hover {
-    background-color: #202c33;
+    background-color: #F7F7FD;
 }
 
 QListWidget#peerList::item:selected {
-    background-color: #2a3942;
+    background-color: #ECE8FE;
+}
+
+/* Floating Action Button (Nuevo Chat / IP Connect) */
+QPushButton#btnNewChat {
+    background: qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 #7C5CFC, stop:1 #5B3AE0);
+    color: #FFFFFF;
+    font-size: 12px;
+    font-weight: 700;
+    border-radius: 16px;
+    padding: 8px 16px;
+    border: none;
+    margin: 8px 14px 12px 14px;
+}
+
+QPushButton#btnNewChat:hover {
+    background: qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 #8E74FD, stop:1 #6B49F0);
 }
 
 /* ===================================================================
-   MAIN SPLITTER & DIVIDERS
-   =================================================================== */
-QSplitter::handle {
-    background-color: #202c33;
-    width: 1px;
-}
-
-/* ===================================================================
-   CHAT PANEL (RIGHT COLUMN)
+   COLUMN 3: MAIN CHAT CANVAS (#F5F6FA)
    =================================================================== */
 #chatContainer {
-    background-color: #0b141a;
+    background-color: #F5F6FA;
 }
 
 #chatHeader {
-    background-color: #202c33;
-    padding: 8px 16px;
-    border-bottom: 1px solid #222d34;
-    min-height: 52px;
-    max-height: 52px;
+    background-color: #FFFFFF;
+    padding: 10px 20px;
+    border-bottom: 1px solid #E8EAF2;
+    min-height: 54px;
+    max-height: 54px;
 }
 
 #chatScrollArea {
-    background-color: #0b141a;
+    background-color: #F5F6FA;
     border: none;
 }
 
 #chatContent {
-    background-color: #0b141a;
+    background-color: #F5F6FA;
 }
 
-/* Header Buttons (Call, Screen, Info) */
 QPushButton.chatHeaderBtn {
-    background-color: transparent;
-    color: #aebac1;
-    border: none;
-    border-radius: 20px;
-    min-width: 40px;
-    max-width: 40px;
-    min-height: 40px;
-    max-height: 40px;
-    font-size: 16px;
-    padding: 0px;
-}
-
-QPushButton.chatHeaderBtn:hover {
-    background-color: #2a3942;
-    color: #00a884;
-}
-
-QPushButton.chatHeaderBtn:pressed {
-    background-color: #1f2c34;
-}
-
-/* ===================================================================
-   CHAT INPUT FOOTER (WHATSAPP FLOATING PILL)
-   =================================================================== */
-#inputContainer {
-    background-color: #202c33;
-    padding: 8px 16px;
-    border-top: 1px solid #222d34;
-}
-
-#messageInput {
-    background-color: #2a3942;
-    color: #e9edef;
-    border: 1px solid #2a3942;
-    border-radius: 10px;
-    padding: 9px 14px;
-    font-size: 14px;
-    line-height: 1.4;
-}
-
-#messageInput:focus {
-    border: 1px solid #00a884;
-}
-
-#messageInput::placeholder {
-    color: #8696a0;
-}
-
-/* Circular Send Button */
-QPushButton#btnSend {
-    background: qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 #00a884, stop:1 #008f6f);
-    color: #111b21;
-    font-size: 16px;
-    font-weight: bold;
-    border-radius: 20px;
-    min-width: 40px;
-    max-width: 40px;
-    min-height: 40px;
-    max-height: 40px;
-    padding: 0px;
-    border: none;
-}
-
-QPushButton#btnSend:hover {
-    background: qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 #06cf9c, stop:1 #00a884);
-}
-
-QPushButton#btnSend:pressed {
-    background-color: #007a5e;
-}
-
-/* Attach & Clipboard Buttons */
-QPushButton.inputActionBtn {
-    background-color: transparent;
-    color: #8696a0;
+    background-color: #F4F5FB;
+    color: #584B7A;
     border: none;
     border-radius: 18px;
     min-width: 36px;
     max-width: 36px;
     min-height: 36px;
     max-height: 36px;
-    font-size: 18px;
+    font-size: 15px;
+    padding: 0px;
+}
+
+QPushButton.chatHeaderBtn:hover {
+    background-color: #ECE8FE;
+    color: #7C5CFC;
+}
+
+/* Floating Bottom Input Bar (WhatsApp / Reference Style Pill) */
+#inputContainer {
+    background-color: transparent;
+    padding: 8px 18px 14px 18px;
+}
+
+#floatingInputPill {
+    background-color: #FFFFFF;
+    border-radius: 20px;
+    border: 1px solid #E8EAF2;
+    padding: 4px 8px;
+    box-shadow: 0 4px 16px rgba(30, 19, 56, 0.06);
+}
+
+#messageInput {
+    background-color: transparent;
+    color: #1E1338;
+    border: none;
+    padding: 8px 10px;
+    font-size: 14px;
+}
+
+#messageInput::placeholder {
+    color: #9494B8;
+}
+
+QPushButton#btnSend {
+    background: qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 #7C5CFC, stop:1 #5B3AE0);
+    color: #FFFFFF;
+    font-size: 15px;
+    font-weight: bold;
+    border-radius: 18px;
+    min-width: 36px;
+    max-width: 36px;
+    min-height: 36px;
+    max-height: 36px;
+    padding: 0px;
+    border: none;
+}
+
+QPushButton#btnSend:hover {
+    background: qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 #8E74FD, stop:1 #6B49F0);
+}
+
+QPushButton.inputActionBtn {
+    background-color: transparent;
+    color: #7D7398;
+    border: none;
+    border-radius: 16px;
+    min-width: 32px;
+    max-width: 32px;
+    min-height: 32px;
+    max-height: 32px;
+    font-size: 17px;
     padding: 0px;
 }
 
 QPushButton.inputActionBtn:hover {
-    background-color: #2a3942;
-    color: #00a884;
+    background-color: #F4F5FB;
+    color: #7C5CFC;
+}
+
+/* ===================================================================
+   COLUMN 4: RIGHT PEER DETAILS PANEL (#1E1338 / #221643)
+   =================================================================== */
+#rightInfoPanel {
+    background-color: #1E1338;
+    border-left: 1px solid rgba(255, 255, 255, 0.08);
+    min-width: 310px;
+    max-width: 330px;
+}
+
+#infoPanelHeader {
+    background-color: #1E1338;
+    padding: 16px 18px 12px 18px;
+}
+
+#infoPanelTitle {
+    font-size: 16px;
+    font-weight: 700;
+    color: #FFFFFF;
+}
+
+QPushButton#btnCloseInfo {
+    background-color: rgba(255, 255, 255, 0.06);
+    color: #A599C8;
+    font-size: 14px;
+    border-radius: 14px;
+    min-width: 28px;
+    max-width: 28px;
+    min-height: 28px;
+    max-height: 28px;
+    border: none;
+}
+
+QPushButton#btnCloseInfo:hover {
+    background-color: rgba(255, 255, 255, 0.15);
+    color: #FFFFFF;
+}
+
+/* Details Panel Action Chips */
+QPushButton.infoActionChip {
+    background-color: rgba(255, 255, 255, 0.08);
+    color: #FFFFFF;
+    font-size: 16px;
+    border-radius: 16px;
+    min-width: 44px;
+    max-width: 44px;
+    min-height: 44px;
+    max-height: 44px;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+QPushButton.infoActionChip:hover {
+    background-color: #7C5CFC;
+    border-color: #7C5CFC;
+}
+
+/* Details Section Cards (Photos, Docs, Links) */
+.infoSectionCard {
+    background-color: #271A4A;
+    border-radius: 14px;
+    padding: 12px 14px;
+    margin: 4px 14px;
+    border: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.infoSectionCard:hover {
+    background-color: #2E1F57;
+}
+
+.infoSectionHeader {
+    color: #E0DAFD;
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.infoSectionLink {
+    color: #7C5CFC;
+    font-size: 11px;
+    font-weight: 700;
 }
 
 /* ===================================================================
    GENERIC FORM CONTROLS & POPUPS
    =================================================================== */
 QLineEdit {
-    background-color: #202c33;
-    color: #e9edef;
-    border: 1px solid #2a3942;
-    border-radius: 8px;
+    background-color: #271A4A;
+    color: #FFFFFF;
+    border: 1px solid #3D2C6F;
+    border-radius: 10px;
     padding: 8px 12px;
     font-size: 13px;
 }
 
 QLineEdit:focus {
-    border: 1px solid #00a884;
+    border: 1px solid #7C5CFC;
 }
 
 QPushButton {
-    background-color: #202c33;
-    color: #e9edef;
-    border: 1px solid #2a3942;
-    border-radius: 8px;
+    background-color: #271A4A;
+    color: #FFFFFF;
+    border: 1px solid #3D2C6F;
+    border-radius: 10px;
     padding: 8px 16px;
     font-size: 13px;
-    font-weight: 500;
+    font-weight: 600;
 }
 
 QPushButton:hover {
-    background-color: #2a3942;
-    border-color: #00a884;
-    color: #ffffff;
-}
-
-QPushButton:pressed {
-    background-color: #1f2c34;
+    background-color: #382669;
+    border-color: #7C5CFC;
 }
 
 QPushButton#primaryAction {
-    background: qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 #00a884, stop:1 #008f6f);
-    color: #111b21;
+    background: qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 #7C5CFC, stop:1 #5B3AE0);
+    color: #FFFFFF;
     font-weight: 700;
     font-size: 13px;
     border: none;
-    padding: 9px 18px;
-    border-radius: 8px;
+    padding: 10px 18px;
+    border-radius: 10px;
 }
 
 QPushButton#primaryAction:hover {
-    background: qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 #06cf9c, stop:1 #00a884);
-}
-
-QPushButton#primaryAction:pressed {
-    background-color: #007a5e;
+    background: qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 #8E74FD, stop:1 #6B49F0);
 }
 
 /* Progress Bars */
 QProgressBar {
-    background-color: #182229;
-    border: 1px solid #2a3942;
-    border-radius: 6px;
+    background-color: rgba(0, 0, 0, 0.08);
+    border: none;
+    border-radius: 5px;
     text-align: center;
-    color: #e9edef;
-    font-size: 11px;
-    font-weight: 600;
-    height: 14px;
+    color: #1E1338;
+    font-size: 10px;
+    font-weight: 700;
+    height: 10px;
 }
 
 QProgressBar::chunk {
-    background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #00a884, stop:1 #06cf9c);
+    background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #7C5CFC, stop:1 #9F8BFD);
     border-radius: 5px;
 }
 
@@ -344,13 +434,13 @@ QScrollBar:vertical {
 }
 
 QScrollBar::handle:vertical {
-    background-color: rgba(134, 150, 160, 0.25);
-    min-height: 30px;
+    background-color: rgba(124, 92, 252, 0.25);
+    min-height: 25px;
     border-radius: 3px;
 }
 
 QScrollBar::handle:vertical:hover {
-    background-color: #00a884;
+    background-color: #7C5CFC;
 }
 
 QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
@@ -363,16 +453,16 @@ QScrollBar:horizontal {
 
 /* Modern Status Bar */
 QStatusBar {
-    background-color: #111b21;
-    color: #8696a0;
-    border-top: 1px solid #202c33;
+    background-color: #1E1338;
+    color: #9F8BFD;
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
     font-size: 11px;
-    padding: 2px 10px;
+    padding: 2px 12px;
 }
 
 /* Dialogs */
 QDialog {
-    background-color: #111b21;
-    color: #e9edef;
+    background-color: #1E1338;
+    color: #FFFFFF;
 }
 """

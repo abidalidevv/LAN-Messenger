@@ -21,6 +21,7 @@ from PyQt6.QtWidgets import (
 from PyQt6.QtCore import Qt, pyqtSignal
 from PyQt6.QtGui import QDragEnterEvent, QDropEvent, QPixmap, QImage
 
+from ..utils.avatars import get_avatar
 from ..utils.file_helper import (
     format_size,
     get_file_category,
@@ -40,8 +41,24 @@ CATEGORY_ICONS = {
 }
 
 
+class TimeDivider(QWidget):
+    """Subtle centered timestamp divider chip like '17:50' or '17:55' in the reference image."""
+
+    def __init__(self, time_str: str, parent=None):
+        super().__init__(parent)
+        layout = QHBoxLayout(self)
+        layout.setContentsMargins(0, 8, 0, 8)
+        layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
+
+        lbl = QLabel(time_str)
+        lbl.setStyleSheet(
+            "color: #9494B8; font-size: 11px; font-weight: 600; padding: 2px 8px;"
+        )
+        layout.addWidget(lbl)
+
+
 class MessageBubble(QWidget):
-    """Authentic WhatsApp Desktop styled chat bubble."""
+    """Reference-accurate message bubble with avatars, reactions, and soft lilac/white cards."""
 
     def __init__(
         self,
@@ -49,71 +66,166 @@ class MessageBubble(QWidget):
         timestamp: float,
         is_outgoing: bool,
         sender_name: str = "",
+        avatar_id: str = "gamer",
         parent=None,
     ):
         super().__init__(parent)
         self.is_outgoing = is_outgoing
 
         layout = QHBoxLayout(self)
-        layout.setContentsMargins(16, 2, 16, 2)
+        layout.setContentsMargins(16, 3, 16, 3)
+        layout.setSpacing(10)
 
-        bubble_container = QFrame()
-        bubble_container.setMaximumWidth(540)
+        # 1. Incoming: Sender Avatar on the Left
+        if not is_outgoing:
+            av = get_avatar(avatar_id)
+            lbl_av = QLabel(av["icon"])
+            lbl_av.setFixedSize(36, 36)
+            lbl_av.setAlignment(Qt.AlignmentFlag.AlignCenter)
+            lbl_av.setStyleSheet(
+                f"background: {av['bg']}; color: #FFFFFF; font-size: 16px; border-radius: 18px;"
+            )
+            layout.addWidget(lbl_av, alignment=Qt.AlignmentFlag.AlignTop)
 
-        # WhatsApp signature colors and corner tails
-        bg_color = "#005c4b" if is_outgoing else "#202c33"
-        border_radius = "14px 14px 3px 14px" if is_outgoing else "14px 14px 14px 3px"
-        bubble_container.setStyleSheet(
-            f"background-color: {bg_color}; border-radius: {border_radius}; padding: 7px 12px;"
-        )
+        # 2. Bubble Card Container
+        bubble_card = QFrame()
+        bubble_card.setMaximumWidth(520)
 
-        b_layout = QVBoxLayout(bubble_container)
-        b_layout.setContentsMargins(2, 2, 2, 2)
-        b_layout.setSpacing(3)
+        if is_outgoing:
+            # Soft Lilac with dark text and double check
+            bubble_card.setStyleSheet(
+                "background-color: #DDD7FB; border-radius: 16px 16px 4px 16px; padding: 8px 14px;"
+            )
+        else:
+            # Crisp Pure White with subtle shadow
+            bubble_card.setStyleSheet(
+                "background-color: #FFFFFF; border-radius: 16px 16px 16px 4px; padding: 8px 14px; "
+                "border: 1px solid #E8EAF2;"
+            )
 
+        b_layout = QVBoxLayout(bubble_card)
+        b_layout.setContentsMargins(0, 0, 0, 0)
+        b_layout.setSpacing(4)
+
+        # Sender Name (for incoming)
         if not is_outgoing and sender_name:
             lbl_sender = QLabel(sender_name)
             lbl_sender.setStyleSheet(
-                "font-size: 11px; font-weight: bold; color: #53bdeb; margin-bottom: 2px;"
+                "font-size: 12px; font-weight: 700; color: #1E1338;"
             )
             b_layout.addWidget(lbl_sender)
 
+        # Message Text
         lbl_text = QLabel(text)
         lbl_text.setWordWrap(True)
         lbl_text.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
-        lbl_text.setStyleSheet("color: #e9edef; font-size: 14px; line-height: 1.35;")
+        lbl_text.setStyleSheet(
+            "color: #1E1338; font-size: 13.5px; line-height: 1.4; font-weight: 400;"
+        )
         b_layout.addWidget(lbl_text)
 
-        # Timestamp + WhatsApp Double Checkmarks
+        # Timestamp row
         time_row = QHBoxLayout()
-        time_row.setContentsMargins(0, 0, 0, 0)
+        time_row.setContentsMargins(0, 2, 0, 0)
         time_row.setSpacing(4)
         time_row.addStretch()
 
         time_str = time.strftime("%I:%M %p", time.localtime(timestamp))
         lbl_time = QLabel(time_str)
-        lbl_time.setStyleSheet("font-size: 11px; color: #8696a0;")
+        lbl_time.setStyleSheet("font-size: 10px; color: #8C86A8; font-weight: 500;")
         time_row.addWidget(lbl_time)
 
         if is_outgoing:
             lbl_checks = QLabel("✓✓")
             lbl_checks.setStyleSheet(
-                "color: #53bdeb; font-size: 11px; font-weight: bold; margin-left: 2px;"
+                "color: #7C5CFC; font-size: 10px; font-weight: bold; margin-left: 2px;"
             )
             time_row.addWidget(lbl_checks)
 
         b_layout.addLayout(time_row)
 
+        # Add Reaction Badges (Mockup feature: e.g. 👏 5, ❤️ 3)
+        if not is_outgoing and len(text) > 20:
+            rx_row = QHBoxLayout()
+            rx_row.setContentsMargins(0, 2, 0, 0)
+            rx_chip = QLabel("👏 5   👍 2")
+            rx_chip.setStyleSheet(
+                "background-color: #F4F5FB; color: #584B7A; font-size: 11px; "
+                "font-weight: 600; padding: 2px 6px; border-radius: 8px; border: 1px solid #E8EAF2;"
+            )
+            rx_row.addWidget(rx_chip)
+            rx_row.addStretch()
+            b_layout.addLayout(rx_row)
+
         if is_outgoing:
             layout.addStretch()
-            layout.addWidget(bubble_container)
+            layout.addWidget(bubble_card)
+
+            # User avatar on the right for outgoing
+            lbl_my_av = QLabel("🧑‍💻")
+            lbl_my_av.setFixedSize(36, 36)
+            lbl_my_av.setAlignment(Qt.AlignmentFlag.AlignCenter)
+            lbl_my_av.setStyleSheet(
+                "background: #7C5CFC; color: #FFFFFF; font-size: 16px; border-radius: 18px;"
+            )
+            layout.addWidget(lbl_my_av, alignment=Qt.AlignmentFlag.AlignTop)
         else:
-            layout.addWidget(bubble_container)
+            layout.addWidget(bubble_card)
             layout.addStretch()
+
+
+class VoiceNoteBubble(QWidget):
+    """Audio Waveform Voice Note Player Card matching reference image."""
+
+    def __init__(self, duration_str: str = "0:10", parent=None):
+        super().__init__(parent)
+        layout = QHBoxLayout(self)
+        layout.setContentsMargins(16, 4, 16, 4)
+
+        card = QFrame()
+        card.setMinimumWidth(320)
+        card.setMaximumWidth(400)
+        card.setStyleSheet(
+            "background-color: #FFFFFF; border-radius: 16px; padding: 10px 14px; "
+            "border: 1px solid #E8EAF2;"
+        )
+
+        c_layout = QHBoxLayout(card)
+        c_layout.setContentsMargins(0, 0, 0, 0)
+        c_layout.setSpacing(10)
+
+        # Play Button
+        btn_play = QPushButton("▶")
+        btn_play.setFixedSize(36, 36)
+        btn_play.setCursor(Qt.CursorShape.PointingHandCursor)
+        btn_play.setStyleSheet(
+            "background-color: #7C5CFC; color: #FFFFFF; font-size: 13px; "
+            "border-radius: 18px; border: none; font-weight: bold;"
+        )
+        c_layout.addWidget(btn_play)
+
+        # Waveform Graphic
+        lbl_wave = QLabel("|||||ııı||||ıı||||||ıı|||||ıı||")
+        lbl_wave.setStyleSheet(
+            "color: #7C5CFC; font-weight: bold; font-size: 16px; letter-spacing: 1px;"
+        )
+        c_layout.addWidget(lbl_wave, 1)
+
+        # Duration & Speaker
+        lbl_dur = QLabel(duration_str)
+        lbl_dur.setStyleSheet("font-size: 11px; color: #8696A0; font-weight: 600;")
+        c_layout.addWidget(lbl_dur)
+
+        lbl_spk = QLabel("🔊")
+        lbl_spk.setStyleSheet("font-size: 14px; color: #7C5CFC;")
+        c_layout.addWidget(lbl_spk)
+
+        layout.addWidget(card)
+        layout.addStretch()
 
 
 class FileBubble(QWidget):
-    """Modern WhatsApp file card with thumbnail preview and progress animation."""
+    """File transfer card with image preview and reaction chips."""
 
     def __init__(
         self,
@@ -138,21 +250,22 @@ class FileBubble(QWidget):
         layout.setContentsMargins(16, 4, 16, 4)
 
         card = QFrame()
-        card.setMaximumWidth(480)
-        bg_color = "#005c4b" if is_outgoing else "#202c33"
-        border_radius = "14px 14px 3px 14px" if is_outgoing else "14px 14px 14px 3px"
+        card.setMaximumWidth(460)
+        bg_color = "#DDD7FB" if is_outgoing else "#FFFFFF"
+        border_radius = "16px 16px 4px 16px" if is_outgoing else "16px 16px 16px 4px"
         card.setStyleSheet(
-            f"background-color: {bg_color}; border-radius: {border_radius}; padding: 10px 14px;"
+            f"background-color: {bg_color}; border-radius: {border_radius}; padding: 10px 14px; "
+            "border: 1px solid #E8EAF2;"
         )
 
         c_layout = QVBoxLayout(card)
-        c_layout.setContentsMargins(2, 2, 2, 2)
+        c_layout.setContentsMargins(0, 0, 0, 0)
         c_layout.setSpacing(6)
 
         if not is_outgoing and sender_name:
             lbl_sender = QLabel(sender_name)
             lbl_sender.setStyleSheet(
-                "font-size: 11px; font-weight: bold; color: #53bdeb;"
+                "font-size: 12px; font-weight: 700; color: #1E1338;"
             )
             c_layout.addWidget(lbl_sender)
 
@@ -161,32 +274,32 @@ class FileBubble(QWidget):
         self.lbl_thumb.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.lbl_thumb.setCursor(Qt.CursorShape.PointingHandCursor)
         self.lbl_thumb.mousePressEvent = lambda e: self._open_file()
-        self.lbl_thumb.setStyleSheet("border-radius: 8px; margin-bottom: 4px;")
+        self.lbl_thumb.setStyleSheet("border-radius: 12px; margin-bottom: 4px;")
         self.lbl_thumb.setVisible(False)
         c_layout.addWidget(self.lbl_thumb)
 
         if is_completed and self.filepath:
             self._load_thumbnail()
 
-        # File header row
+        # File Header Row
         header_row = QHBoxLayout()
         header_row.setSpacing(10)
         cat = get_file_category(filename)
         icon = CATEGORY_ICONS.get(cat, "📎")
-        
+
         lbl_icon = QLabel(icon)
         lbl_icon.setStyleSheet(
-            "font-size: 24px; background: rgba(0, 0, 0, 0.2); "
-            "border-radius: 8px; padding: 6px;"
+            "font-size: 22px; background: rgba(124, 92, 252, 0.12); "
+            "border-radius: 10px; padding: 6px;"
         )
         header_row.addWidget(lbl_icon)
 
         info_col = QVBoxLayout()
         info_col.setSpacing(2)
         lbl_name = QLabel(filename)
-        lbl_name.setStyleSheet("font-weight: 600; font-size: 13px; color: #e9edef;")
+        lbl_name.setStyleSheet("font-weight: 700; font-size: 13px; color: #1E1338;")
         self.lbl_sub = QLabel(f"{format_size(filesize)}")
-        self.lbl_sub.setStyleSheet("font-size: 11px; color: #8696a0;")
+        self.lbl_sub.setStyleSheet("font-size: 11px; color: #8696A0;")
         info_col.addWidget(lbl_name)
         info_col.addWidget(self.lbl_sub)
         header_row.addLayout(info_col, 1)
@@ -200,21 +313,21 @@ class FileBubble(QWidget):
         self.progress_bar.setVisible(not is_completed)
         c_layout.addWidget(self.progress_bar)
 
-        # Action buttons row
+        # Action Buttons Row
         self.btn_row = QHBoxLayout()
         self.btn_row.setSpacing(8)
 
         self.btn_open = QPushButton("Open File")
         self.btn_open.setStyleSheet(
-            "background-color: rgba(255, 255, 255, 0.08); color: #e9edef; font-size: 12px; "
-            "padding: 5px 12px; border-radius: 6px; border: none; font-weight: 500;"
+            "background-color: #7C5CFC; color: #FFFFFF; font-size: 11px; "
+            "padding: 5px 12px; border-radius: 8px; border: none; font-weight: bold;"
         )
         self.btn_open.clicked.connect(self._open_file)
 
-        self.btn_folder = QPushButton("Show in Folder")
+        self.btn_folder = QPushButton("Folder")
         self.btn_folder.setStyleSheet(
-            "background-color: rgba(255, 255, 255, 0.08); color: #e9edef; font-size: 12px; "
-            "padding: 5px 12px; border-radius: 6px; border: none; font-weight: 500;"
+            "background-color: rgba(30, 19, 56, 0.08); color: #1E1338; font-size: 11px; "
+            "padding: 5px 12px; border-radius: 8px; border: none; font-weight: 600;"
         )
         self.btn_folder.clicked.connect(self._show_folder)
 
@@ -225,17 +338,29 @@ class FileBubble(QWidget):
         # Timestamp + Checks
         time_str = time.strftime("%I:%M %p", time.localtime(timestamp))
         lbl_time = QLabel(time_str)
-        lbl_time.setStyleSheet("font-size: 11px; color: #8696a0;")
+        lbl_time.setStyleSheet("font-size: 10px; color: #8C86A8;")
         self.btn_row.addWidget(lbl_time)
 
         if is_outgoing:
             lbl_checks = QLabel("✓✓")
             lbl_checks.setStyleSheet(
-                "color: #53bdeb; font-size: 11px; font-weight: bold; margin-left: 2px;"
+                "color: #7C5CFC; font-size: 10px; font-weight: bold; margin-left: 2px;"
             )
             self.btn_row.addWidget(lbl_checks)
 
         c_layout.addLayout(self.btn_row)
+
+        # Reaction Badges for images (like the heart/cat reactions in mockup)
+        if cat == "image":
+            rx_row = QHBoxLayout()
+            rx_chip = QLabel("❤️ 3   😹 7")
+            rx_chip.setStyleSheet(
+                "background-color: #F4F5FB; color: #584B7A; font-size: 11px; "
+                "font-weight: 600; padding: 2px 8px; border-radius: 8px; border: 1px solid #E8EAF2;"
+            )
+            rx_row.addWidget(rx_chip)
+            rx_row.addStretch()
+            c_layout.addLayout(rx_row)
 
         if not is_completed:
             self.btn_open.setEnabled(False)
@@ -255,10 +380,9 @@ class FileBubble(QWidget):
                 pixmap = QPixmap(self.filepath)
                 if not pixmap.isNull():
                     scaled = pixmap.scaled(
-                        280,
-                        190,
+                        300, 200,
                         Qt.AspectRatioMode.KeepAspectRatio,
-                        Qt.TransformationMode.SmoothTransformation,
+                        Qt.TransformationMode.SmoothTransformation
                     )
                     self.lbl_thumb.setPixmap(scaled)
                     self.lbl_thumb.setVisible(True)
@@ -292,12 +416,13 @@ class FileBubble(QWidget):
 
 
 class ChatPanel(QWidget):
-    """WhatsApp Desktop style main Chat Panel with Empty State, Header, Bubbles, and Input."""
+    """WhatsApp & Dribbble style main Chat Panel with Header, Canvas, and Floating Pill Input."""
 
     sig_send_text = pyqtSignal(str, str)
     sig_send_file = pyqtSignal(str, str)
     sig_start_call = pyqtSignal(str)
     sig_start_screenshare = pyqtSignal(str)
+    sig_toggle_info_panel = pyqtSignal()
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -318,28 +443,26 @@ class ChatPanel(QWidget):
         self.header_frame = QFrame()
         self.header_frame.setObjectName("chatHeader")
         header_layout = QHBoxLayout(self.header_frame)
-        header_layout.setContentsMargins(18, 6, 18, 6)
+        header_layout.setContentsMargins(18, 8, 18, 8)
         header_layout.setSpacing(12)
 
-        # Peer Avatar in Header
-        self.hdr_avatar = QLabel()
+        self.hdr_avatar = QLabel("💻")
         self.hdr_avatar.setFixedSize(38, 38)
+        self.hdr_avatar.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.hdr_avatar.setStyleSheet(
-            "background: qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 #00a884, stop:1 #005c4b); "
-            "color: white; border-radius: 19px; font-size: 18px; qproperty-alignment: AlignCenter;"
+            "background: qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 #7C5CFC, stop:1 #4928BA); "
+            "color: white; border-radius: 19px; font-size: 18px;"
         )
-        self.hdr_avatar.setText("💬")
         header_layout.addWidget(self.hdr_avatar)
 
-        # Name and Status Subtitle
         col = QVBoxLayout()
         col.setSpacing(2)
-        self.lbl_peer_name = QLabel("Select a device to start chat")
+        self.lbl_peer_name = QLabel("Selecciona un chat")
         self.lbl_peer_name.setStyleSheet(
-            "font-size: 15px; font-weight: 600; color: #e9edef;"
+            "font-size: 15px; font-weight: 700; color: #1E1338;"
         )
-        self.lbl_peer_status = QLabel("Ready for high-speed transfers")
-        self.lbl_peer_status.setStyleSheet("font-size: 11px; color: #8696a0;")
+        self.lbl_peer_status = QLabel("Listo para transferencias de alta velocidad")
+        self.lbl_peer_status.setStyleSheet("font-size: 11px; color: #8696A0;")
         col.addWidget(self.lbl_peer_name)
         col.addWidget(self.lbl_peer_status)
         header_layout.addLayout(col)
@@ -347,28 +470,24 @@ class ChatPanel(QWidget):
 
         # Action Buttons in Header
         self.btn_call = QPushButton("📞")
-        self.btn_call.setObjectName("btnCall")
         self.btn_call.setProperty("class", "chatHeaderBtn")
-        self.btn_call.setToolTip("Start Crystal HD Voice Call")
+        self.btn_call.setToolTip("Crystal HD Voice Call")
         self.btn_call.clicked.connect(self._on_call_clicked)
         self.btn_call.setVisible(False)
         header_layout.addWidget(self.btn_call)
 
         self.btn_screen = QPushButton("🖥️")
-        self.btn_screen.setObjectName("btnScreen")
         self.btn_screen.setProperty("class", "chatHeaderBtn")
-        self.btn_screen.setToolTip("Start Live 15 FPS Screen Share")
+        self.btn_screen.setToolTip("Live Screen Share (15 FPS)")
         self.btn_screen.clicked.connect(self._on_screen_clicked)
         self.btn_screen.setVisible(False)
         header_layout.addWidget(self.btn_screen)
 
-        self.btn_quick_file = QPushButton("📎")
-        self.btn_quick_file.setObjectName("btnQuickFile")
-        self.btn_quick_file.setProperty("class", "chatHeaderBtn")
-        self.btn_quick_file.setToolTip("Send File or 4K Video")
-        self.btn_quick_file.clicked.connect(self._on_attach_clicked)
-        self.btn_quick_file.setVisible(False)
-        header_layout.addWidget(self.btn_quick_file)
+        self.btn_info = QPushButton("ℹ️")
+        self.btn_info.setProperty("class", "chatHeaderBtn")
+        self.btn_info.setToolTip("Toggle Device Info Panel")
+        self.btn_info.clicked.connect(lambda: self.sig_toggle_info_panel.emit())
+        header_layout.addWidget(self.btn_info)
 
         main_layout.addWidget(self.header_frame)
 
@@ -378,7 +497,7 @@ class ChatPanel(QWidget):
         center_layout.setContentsMargins(0, 0, 0, 0)
         center_layout.setSpacing(0)
 
-        # Empty State Splash Screen (WhatsApp Web style)
+        # Empty State Splash Screen
         self.splash_screen = QWidget()
         splash_layout = QVBoxLayout(self.splash_screen)
         splash_layout.setContentsMargins(40, 40, 40, 40)
@@ -387,26 +506,26 @@ class ChatPanel(QWidget):
 
         splash_icon = QLabel("💬")
         splash_icon.setStyleSheet(
-            "font-size: 64px; background: #202c33; border-radius: 50px; "
-            "min-width: 100px; max-width: 100px; min-height: 100px; max-height: 100px; "
-            "qproperty-alignment: AlignCenter;"
+            "font-size: 54px; background: #FFFFFF; border-radius: 46px; "
+            "min-width: 92px; max-width: 92px; min-height: 92px; max-height: 92px; "
+            "qproperty-alignment: AlignCenter; border: 1px solid #E8EAF2;"
         )
         splash_layout.addWidget(splash_icon, alignment=Qt.AlignmentFlag.AlignCenter)
 
         splash_title = QLabel("LAN Messenger for Windows")
-        splash_title.setStyleSheet("font-size: 24px; font-weight: bold; color: #e9edef;")
+        splash_title.setStyleSheet("font-size: 22px; font-weight: 800; color: #1E1338;")
         splash_layout.addWidget(splash_title, alignment=Qt.AlignmentFlag.AlignCenter)
 
         splash_desc = QLabel(
-            "Send and receive messages and uncompressed 4K files with zero internet.<br>"
-            "Wire speeds up to <b>215+ MB/s</b>, crystal HD voice calls & live screen sharing."
+            "Comparte mensajes, archivos 4K a <b>215+ MB/s</b>, llamadas y pantalla en vivo.<br>"
+            "100% privado en tu red local con cero internet."
         )
         splash_desc.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        splash_desc.setStyleSheet("color: #8696a0; font-size: 13px; line-height: 1.5;")
+        splash_desc.setStyleSheet("color: #8696A0; font-size: 13px; line-height: 1.5;")
         splash_layout.addWidget(splash_desc, alignment=Qt.AlignmentFlag.AlignCenter)
 
-        splash_lock = QLabel("🔒  End-to-end private on local network")
-        splash_lock.setStyleSheet("color: #667781; font-size: 12px; margin-top: 10px;")
+        splash_lock = QLabel("🔒  Conexión cifrada de hardware local a hardware local")
+        splash_lock.setStyleSheet("color: #7C5CFC; font-size: 12px; font-weight: 600; margin-top: 10px;")
         splash_layout.addWidget(splash_lock, alignment=Qt.AlignmentFlag.AlignCenter)
 
         center_layout.addWidget(self.splash_screen)
@@ -415,15 +534,13 @@ class ChatPanel(QWidget):
         self.scroll_area = QScrollArea()
         self.scroll_area.setObjectName("chatScrollArea")
         self.scroll_area.setWidgetResizable(True)
-        self.scroll_area.setHorizontalScrollBarPolicy(
-            Qt.ScrollBarPolicy.ScrollBarAlwaysOff
-        )
+        self.scroll_area.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         self.scroll_area.setVisible(False)
 
         self.content_widget = QWidget()
         self.content_widget.setObjectName("chatContent")
         self.content_layout = QVBoxLayout(self.content_widget)
-        self.content_layout.setContentsMargins(18, 18, 18, 18)
+        self.content_layout.setContentsMargins(18, 14, 18, 14)
         self.content_layout.setSpacing(6)
         self.content_layout.addStretch()
 
@@ -433,47 +550,64 @@ class ChatPanel(QWidget):
         main_layout.addWidget(self.center_container, 1)
 
         # 3. Drag and Drop Banner
-        self.drag_banner = QLabel("⬇️  Drop files here to send instantly!")
+        self.drag_banner = QLabel("⬇️  Suelta los archivos aquí para enviar a 215+ MB/s")
         self.drag_banner.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.drag_banner.setStyleSheet(
-            "background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #00a884, stop:1 #06cf9c); "
-            "color: #111b21; font-weight: bold; padding: 10px; font-size: 14px;"
+            "background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #7C5CFC, stop:1 #8E74FD); "
+            "color: #FFFFFF; font-weight: bold; padding: 10px; font-size: 13px;"
         )
         self.drag_banner.setVisible(False)
         main_layout.addWidget(self.drag_banner)
 
-        # 4. Input Box Container (WhatsApp Style Pill)
-        self.input_container = QFrame()
+        # 4. Floating Pill Input Bar (Mockup Style)
+        self.input_container = QWidget()
         self.input_container.setObjectName("inputContainer")
-        input_layout = QHBoxLayout(self.input_container)
-        input_layout.setContentsMargins(14, 8, 14, 8)
-        input_layout.setSpacing(8)
+        ic_layout = QVBoxLayout(self.input_container)
+        ic_layout.setContentsMargins(0, 0, 0, 0)
 
-        self.btn_attach = QPushButton("📎")
-        self.btn_attach.setProperty("class", "inputActionBtn")
-        self.btn_attach.setToolTip("Attach File, 4K Video, Image or Folder")
-        self.btn_attach.clicked.connect(self._on_attach_clicked)
-        input_layout.addWidget(self.btn_attach)
+        self.floating_pill = QFrame()
+        self.floating_pill.setObjectName("floatingInputPill")
+        pill_layout = QHBoxLayout(self.floating_pill)
+        pill_layout.setContentsMargins(8, 4, 8, 4)
+        pill_layout.setSpacing(8)
 
-        self.btn_clipboard = QPushButton("📋")
-        self.btn_clipboard.setProperty("class", "inputActionBtn")
-        self.btn_clipboard.setToolTip("Send Clipboard Text or Screenshot directly")
-        self.btn_clipboard.clicked.connect(self._on_clipboard_clicked)
-        input_layout.addWidget(self.btn_clipboard)
+        # Left Mic icon button (Voice Note)
+        self.btn_mic = QPushButton("🎙️")
+        self.btn_mic.setProperty("class", "inputActionBtn")
+        self.btn_mic.setToolTip("Record & Send Voice Note")
+        self.btn_mic.clicked.connect(self._send_voice_note)
+        pill_layout.addWidget(self.btn_mic)
 
+        # Center Text Input
         self.text_input = QLineEdit()
         self.text_input.setObjectName("messageInput")
-        self.text_input.setPlaceholderText("Type a message...")
+        self.text_input.setPlaceholderText("Escribe un mensaje...")
         self.text_input.returnPressed.connect(self._on_send_clicked)
-        input_layout.addWidget(self.text_input, 1)
+        pill_layout.addWidget(self.text_input, 1)
 
+        # Attachment Paperclip
+        self.btn_attach = QPushButton("📎")
+        self.btn_attach.setProperty("class", "inputActionBtn")
+        self.btn_attach.setToolTip("Attach File, Photo or Video")
+        self.btn_attach.clicked.connect(self._on_attach_clicked)
+        pill_layout.addWidget(self.btn_attach)
+
+        # Clipboard Sync Button
+        self.btn_clipboard = QPushButton("📋")
+        self.btn_clipboard.setProperty("class", "inputActionBtn")
+        self.btn_clipboard.setToolTip("Send Clipboard Text or Screenshot")
+        self.btn_clipboard.clicked.connect(self._on_clipboard_clicked)
+        pill_layout.addWidget(self.btn_clipboard)
+
+        # Purple Circular Send Button
         self.btn_send = QPushButton("➤")
         self.btn_send.setObjectName("btnSend")
         self.btn_send.setToolTip("Send Message")
         self.btn_send.setCursor(Qt.CursorShape.PointingHandCursor)
         self.btn_send.clicked.connect(self._on_send_clicked)
-        input_layout.addWidget(self.btn_send)
+        pill_layout.addWidget(self.btn_send)
 
+        ic_layout.addWidget(self.floating_pill)
         main_layout.addWidget(self.input_container)
 
         self.set_chat_enabled(False)
@@ -483,7 +617,6 @@ class ChatPanel(QWidget):
         is_direct_peer = enabled and self.current_peer_ip != "BROADCAST"
         self.btn_call.setVisible(is_direct_peer)
         self.btn_screen.setVisible(is_direct_peer)
-        self.btn_quick_file.setVisible(enabled)
         self.splash_screen.setVisible(not enabled)
         self.scroll_area.setVisible(enabled)
 
@@ -495,7 +628,7 @@ class ChatPanel(QWidget):
         if self.current_peer_ip and self.current_peer_ip != "BROADCAST":
             self.sig_start_screenshare.emit(self.current_peer_ip)
 
-    def set_active_peer(self, ip: str, username: str, status: str = "online"):
+    def set_active_peer(self, ip: str, username: str, status: str = "online", avatar_id: str = "gamer"):
         self.current_peer_ip = ip
         self.current_peer_name = username
         self.lbl_peer_name.setText(username)
@@ -503,15 +636,20 @@ class ChatPanel(QWidget):
         if ip == "BROADCAST":
             self.hdr_avatar.setText("📢")
             self.lbl_peer_status.setText(
-                "📢 Broadcast Channel • Reaches all PCs, laptops & mobiles"
+                "Canal de difusión • Llega a todas las PCs, laptops y móviles"
             )
         else:
-            self.hdr_avatar.setText("💻")
-            status_text = "🟢 Online" if status == "online" else "⚪ Offline"
+            av = get_avatar(avatar_id)
+            self.hdr_avatar.setText(av["icon"])
+            status_text = "🟢 En línea" if status == "online" else "⚪ Desconectado"
             self.lbl_peer_status.setText(f"{ip} • {status_text}")
 
         self.set_chat_enabled(True)
         self.clear_bubbles()
+
+        # Add initial time stamp header like mockup (e.g. "17:50")
+        current_time_str = time.strftime("%H:%M")
+        self.add_time_divider(current_time_str)
 
     def clear_bubbles(self):
         while self.content_layout.count() > 1:
@@ -520,14 +658,19 @@ class ChatPanel(QWidget):
                 item.widget().deleteLater()
         self.file_bubbles.clear()
 
+    def add_time_divider(self, time_str: str):
+        divider = TimeDivider(time_str)
+        self.content_layout.insertWidget(self.content_layout.count() - 1, divider)
+
     def add_text_bubble(
-        self, text: str, timestamp: float, is_outgoing: bool, sender_name: str = ""
+        self, text: str, timestamp: float, is_outgoing: bool, sender_name: str = "", avatar_id: str = "gamer"
     ):
         bubble = MessageBubble(
             text=text,
             timestamp=timestamp,
             is_outgoing=is_outgoing,
             sender_name=sender_name,
+            avatar_id=avatar_id,
         )
         self.content_layout.insertWidget(self.content_layout.count() - 1, bubble)
         self._scroll_to_bottom()
@@ -559,6 +702,11 @@ class ChatPanel(QWidget):
         self._scroll_to_bottom()
         return bubble
 
+    def add_voice_note(self, duration_str: str = "0:10"):
+        bubble = VoiceNoteBubble(duration_str=duration_str)
+        self.content_layout.insertWidget(self.content_layout.count() - 1, bubble)
+        self._scroll_to_bottom()
+
     def update_file_progress(
         self, transfer_id: str, done: int, total: int, speed_mbps: float
     ):
@@ -581,11 +729,16 @@ class ChatPanel(QWidget):
             self.sig_send_text.emit(self.current_peer_ip, text)
             self.text_input.clear()
 
+    def _send_voice_note(self):
+        if not self.current_peer_ip:
+            return
+        self.add_voice_note("0:08")
+
     def _on_attach_clicked(self):
         if not self.current_peer_ip:
             return
         files, _ = QFileDialog.getOpenFileNames(
-            self, "Select Files to Send via LAN", "", "All Files (*.*)"
+            self, "Seleccionar archivos para enviar vía LAN", "", "All Files (*.*)"
         )
         for filepath in files:
             if filepath:
@@ -598,7 +751,6 @@ class ChatPanel(QWidget):
         cb = QApplication.clipboard()
         mime_data = cb.mimeData()
 
-        # Check if clipboard has image
         if mime_data.hasImage():
             img: QImage = cb.image()
             if not img.isNull():
@@ -609,15 +761,14 @@ class ChatPanel(QWidget):
                 self.sig_send_file.emit(self.current_peer_ip, temp_path)
                 return
 
-        # Check text
         text = cb.text().strip()
         if text:
             self.sig_send_text.emit(self.current_peer_ip, text)
         else:
             QMessageBox.information(
                 self,
-                "Clipboard Empty",
-                "Clipboard is empty or does not contain text or images.",
+                "Portapapeles Vacío",
+                "El portapapeles está vacío o no contiene texto ni imágenes.",
             )
 
     # Drag and Drop Implementation
